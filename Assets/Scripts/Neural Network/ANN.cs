@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public enum Activation
 {
@@ -150,16 +150,42 @@ public class ANN
 
     public void CopyWeights(ANN parent1)
     {
+        double sum = 0;
+        double sum2 = 0;
+        double sum3 = 0;
         for (int i = 0; i < parent1.layers.Count; i++)
         {
             for (int j = 0; j < parent1.layers[i].neurons.Count; j++)
             {
                 for (int k = 0; k < parent1.layers[i].neurons[j].weights.Count; k++)
                 {
+                    sum2 += layers[i].neurons[j].weights[k];
                     layers[i].neurons[j].weights[k] = parent1.layers[i].neurons[j].weights[k];
+                    sum += parent1.layers[i].neurons[j].weights[k];
+                    sum3 += layers[i].neurons[j].weights[k];
                 }
-
+                sum2 += layers[i].neurons[j].bias;
                 layers[i].neurons[j].bias = parent1.layers[i].neurons[j].bias;
+                sum += parent1.layers[i].neurons[j].bias;
+                sum3 += layers[i].neurons[j].bias;
+            }
+        }
+
+        //Debug.Log(sum + " " + sum2 + " " + sum3 + " ************************");
+    }
+    public void WeightSum()
+    {
+        double sum = 0;
+        for (int i = 0; i < layers.Count; i++)
+        {
+            for (int j = 0; j < layers[i].neurons.Count; j++)
+            {
+                for (int k = 0; k < layers[i].neurons[j].weights.Count; k++)
+                {
+                    layers[i].neurons[j].weights[k] = layers[i].neurons[j].weights[k];
+                    sum += layers[i].neurons[j].weights[k];
+                }
+                sum += layers[i].neurons[j].bias;
             }
         }
     }
@@ -247,12 +273,14 @@ public class ANN
     }
     double Sigmoid(double input)
     {
+        input = System.Math.Clamp(input, -1, 1);
         double expo = System.Math.Exp(input);
         double result = expo / (1 + expo);
         //if (result == double.NaN)
         //{
-        Debug.Log(result + " " + expo + " " + input);
+        //Debug.Log(result + " " + expo + " " + input);
         //}
+        result = System.Math.Clamp(result, -1, 1);
         return result;
     }
     double Step(double input)

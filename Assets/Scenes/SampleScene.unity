@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 105116128}
   - component: {fileID: 105116127}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: DataManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,8 +148,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e98affcecf226419fb93773300d3a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  imagesPath: /Dataset/train-images.idx3-ubyte
-  labelsPath: /Dataset/train-labels.idx1-ubyte
 --- !u!4 &105116128
 Transform:
   m_ObjectHideFlags: 0
@@ -160,6 +158,61 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 554.223, y: 404.5592, z: -3.9780781}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &359670381
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 359670383}
+  - component: {fileID: 359670382}
+  m_Layer: 0
+  m_Name: ImageClassifier
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &359670382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359670381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb3427fa70ae6e44191d97b983760f0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TrainingImagePath: /ProperDataset/TrainImages
+  m_TrainingLabelPath: /ProperDataset/TrainLabels
+  m_Epochs: 1
+  m_NoOfDataPointsToTrain: 1000
+  m_NoOfInputs: 784
+  m_NoOfOutputs: 10
+  m_NoOfHiddenLayers: 0
+  m_NoOfNeuronsPerHiddenLayers: 0
+  m_LearningRate: 0.0001
+  m_HiddenActivation: 3
+  m_OutputActivation: 0
+--- !u!4 &359670383
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359670381}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -263,3 +316,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 105116128}
+  - {fileID: 359670383}
