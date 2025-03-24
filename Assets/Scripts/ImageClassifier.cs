@@ -44,7 +44,7 @@ public class ImageClassifier : MonoBehaviour
         {
             for(int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(m_Images[j].ToList().ConvertAll(x => (double)x), LabelToOutputValue(m_Labels[j]).ConvertAll(x => new double()));
+                List<double> predicted = ann.Train(m_Images[j].ToList().ConvertAll(x => (double)x), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
             }
         }
