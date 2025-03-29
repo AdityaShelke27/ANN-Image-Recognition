@@ -340,8 +340,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CanvasCollider: {fileID: 1497924982}
-  m_Height: 100
-  m_Width: 100
+  m_Resolution: 28
+  m_SmoothStep: 2
+  m_ComputeShader: {fileID: 7200000, guid: 1dd304c213db20e46a8070ab3d8b33ef, type: 3}
 --- !u!4 &1192906115
 Transform:
   m_ObjectHideFlags: 0
@@ -399,7 +400,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 16e543c8d51fcce42b368acb6d627087, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

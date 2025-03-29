@@ -1,0 +1,52 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float SmoothStep;
+
+float2 CurrentPosition;
+float2 LastPosition;
+
+[numthreads(1,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float2 posCount = LastPosition;
+    bool isXTurn = true;
+    
+    while (length(float2(CurrentPosition.x - posCount.x, CurrentPosition.y - posCount.y)) > 0)
+    {
+        if (isXTurn)
+        {
+            if (posCount.x != CurrentPosition.x)
+            {
+                posCount.x += sign(CurrentPosition.x - posCount.x);
+                float dist = length(float2(posCount.x - id.x, posCount.y - id.y));
+                if (dist < SmoothStep)
+                {
+                    float val = (SmoothStep - dist) / SmoothStep;
+        
+                    Result[id.xy] = float4(val, val, val, 1);
+                }
+
+            }
+            isXTurn = !isXTurn;
+        }
+        else
+        {
+            if (posCount.y != CurrentPosition.y)
+            {
+                posCount.y += sign(CurrentPosition.y - posCount.y);
+                float dist = length(float2(posCount.x - id.x, posCount.y - id.y));
+                if (dist < SmoothStep)
+                {
+                    float val = (SmoothStep - dist) / SmoothStep;
+        
+                    Result[id.xy] = float4(val, val, val, 1);
+                }
+            }
+            isXTurn = !isXTurn;
+        }
+    }
+}
