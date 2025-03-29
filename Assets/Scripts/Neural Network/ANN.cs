@@ -1,14 +1,16 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public enum Activation
 {
     Sigmoid,
     Step,
     Tanh,
-    ReLu
+    ReLu,
+    LeakyReLu,
+    SoftMax
 }
 public class ANN
 {
@@ -78,6 +80,7 @@ public class ANN
             }
             outputs.Clear();
 
+            List<double> weightedInputs = new();
             for (int j = 0; j < layers[i].numNeurons; j++)
             {
                 double N = 0;
@@ -90,13 +93,17 @@ public class ANN
                 }
 
                 N -= layers[i].neurons[j].bias;
+                weightedInputs.Add(N);
+            }
+            for(int j = 0; j < layers[i].numNeurons; j++)
+            {
                 if (i == numHidden)
                 {
-                    layers[i].neurons[j].output = ActivationO(N);
+                    layers[i].neurons[j].output = ActivationO(weightedInputs, j);
                 }
                 else
                 {
-                    layers[i].neurons[j].output = Activation(N);
+                    layers[i].neurons[j].output = Activation(weightedInputs, j);
                 }
                 outputs.Add(layers[i].neurons[j].output);
             }
@@ -239,36 +246,44 @@ public class ANN
             }
         }
     }
-    double Activation(double input)
+    double Activation(List<double> inputs, int idx)
     {
         switch (hiddenActivation)
         {
             case global::Activation.Sigmoid:
-                return Sigmoid(input);
+                return Sigmoid(inputs[idx]);
             case global::Activation.Tanh:
-                return Tanh(input);
+                return Tanh(inputs[idx]);
             case global::Activation.ReLu:
-                return ReLu(input);
+                return ReLu(inputs[idx]);
             case global::Activation.Step:
-                return Step(input);
+                return Step(inputs[idx]);
+            case global::Activation.LeakyReLu:
+                return LeakyReLu(inputs[idx]);
+            case global::Activation.SoftMax:
+                return SoftMax(inputs, idx);
             default:
-                return Sigmoid(input);
+                return Sigmoid(inputs[idx]);
         }
     }
-    double ActivationO(double input)
+    double ActivationO(List<double> inputs, int idx)
     {
-        switch (hiddenActivation)
+        switch (outputActivation)
         {
             case global::Activation.Sigmoid:
-                return Sigmoid(input);
+                return Sigmoid(inputs[idx]);
             case global::Activation.Tanh:
-                return Tanh(input);
+                return Tanh(inputs[idx]);
             case global::Activation.ReLu:
-                return ReLu(input);
+                return ReLu(inputs[idx]);
             case global::Activation.Step:
-                return Step(input);
+                return Step(inputs[idx]);
+            case global::Activation.LeakyReLu:
+                return LeakyReLu(inputs[idx]);
+            case global::Activation.SoftMax:
+                return SoftMax(inputs, idx);
             default:
-                return Sigmoid(input);
+                return Sigmoid(inputs[idx]);
         }
     }
     double Sigmoid(double input)
@@ -297,7 +312,7 @@ public class ANN
 
     double Tanh(double input)
     {
-        double expo = System.Math.Exp(-2 * input);
+        double expo = Math.Exp(-2 * input);
         return 2 / (1f + expo) - 1;
     }
 
@@ -309,7 +324,28 @@ public class ANN
         }
         else
         {
+            return 0;
+        }
+    }
+    double LeakyReLu(double input)
+    {
+        if (input > 0)
+        {
+            return input;
+        }
+        else
+        {
             return 0.01 * input;
         }
+    }
+    double SoftMax(List<double> input, int idx)
+    {
+        double sum = 0;
+        foreach (double t in input)
+        {
+            sum += Math.Exp(t);
+        }
+
+        return Math.Exp(input[idx]) / sum;
     }
 }

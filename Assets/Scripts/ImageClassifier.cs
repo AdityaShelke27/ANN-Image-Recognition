@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class ImageClassifier : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class ImageClassifier : MonoBehaviour
     int m_LabelsLoaded;
     byte[][] m_Images;
     byte[] m_Labels;
+
+    double[][] m_ImageValues;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -38,14 +41,25 @@ public class ImageClassifier : MonoBehaviour
         (m_LabelsLoaded, m_Labels) =
             DataManager.LoadLabels(m_TrainingLabelPath, 0);
 
+        m_ImageValues = new double[m_Images.Length][];
+        for(int i = 0; i < m_Images.Length; i++)
+        {
+            m_ImageValues[i] = new double[m_Images[i].Length];
+            for(int j = 0; j < m_Images[i].Length; j++)
+            {
+                m_ImageValues[i][j] = (double)m_Images[i][j] / 255;
+            }
+        }
+
         int noOfIter = m_ImagesLoaded > m_LabelsLoaded ? m_LabelsLoaded : m_ImagesLoaded;
         noOfIter = noOfIter > m_NoOfDataPointsToTrain ? m_NoOfDataPointsToTrain : noOfIter;
         for(int i = 0; i < m_Epochs; i++)
         {
             for(int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(m_Images[j].ToList().ConvertAll(x => (double)x), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
-                Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
+                List<double> predicted = ann.Train(m_ImageValues[j].ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
+                Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
             }
         }
         Debug.Log("Done");
@@ -83,5 +97,20 @@ public class ImageClassifier : MonoBehaviour
         }
 
         return output;
+    }
+    int OutputToLabelValue(List<double> value)
+    {
+        double output = 0;
+        int idx = -1;
+        for(int i = 0; i < value.Count; i++)
+        {
+            if (value[i] > output)
+            {
+                output = value[i];
+                idx = i;
+            }
+        }
+
+        return idx;
     }
 }
