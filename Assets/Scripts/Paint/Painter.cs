@@ -3,23 +3,25 @@ using UnityEngine.UI;
 
 public class Painter : MonoBehaviour
 {
-    [SerializeField] BoxCollider2D m_CanvasCollider;
+    public BoxCollider2D canvasCollider;
     [SerializeField] int m_Resolution;
     [SerializeField] float m_SmoothStep;
+    [SerializeField] float m_Strength;
     [SerializeField] ComputeShader m_ComputeShader;
     uint[] m_ComputeShaderThreadGroup = new uint[3];
-    RenderTexture m_DrawTexture;
+    public RenderTexture m_DrawTexture;
     Vector2 m_LastPoint = new Vector2();
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         m_DrawTexture = CreateTexture();
-        m_CanvasCollider.GetComponent<MeshRenderer>().material.mainTexture = m_DrawTexture;
+        canvasCollider.GetComponent<MeshRenderer>().material.mainTexture = m_DrawTexture;
         m_ComputeShader.GetKernelThreadGroupSizes(0, out m_ComputeShaderThreadGroup[0], 
             out m_ComputeShaderThreadGroup[1], out m_ComputeShaderThreadGroup[2]);
 
         m_ComputeShader.SetTexture(0, "Result", m_DrawTexture);
         m_ComputeShader.SetFloat("SmoothStep", m_SmoothStep);
+        m_ComputeShader.SetFloat("Strength", m_Strength);
     }
 
     // Update is called once per frame
@@ -28,16 +30,16 @@ public class Painter : MonoBehaviour
         if(Input.GetMouseButtonDown(0))
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 pixelPos = new Vector2(Mathf.InverseLerp(m_CanvasCollider.bounds.min.x, m_CanvasCollider.bounds.max.x, pos.x),
-                Mathf.InverseLerp(m_CanvasCollider.bounds.min.y, m_CanvasCollider.bounds.max.y, pos.y)) * m_Resolution;
+            Vector2 pixelPos = new Vector2(Mathf.InverseLerp(canvasCollider.bounds.min.x, canvasCollider.bounds.max.x, pos.x),
+                Mathf.InverseLerp(canvasCollider.bounds.min.y, canvasCollider.bounds.max.y, pos.y)) * m_Resolution;
 
             m_LastPoint = pixelPos;
         }
         if(Input.GetMouseButton(0))
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 pixelPos = new Vector2(Mathf.InverseLerp(m_CanvasCollider.bounds.min.x, m_CanvasCollider.bounds.max.x, pos.x), 
-                Mathf.InverseLerp(m_CanvasCollider.bounds.min.y, m_CanvasCollider.bounds.max.y, pos.y)) * m_Resolution;
+            Vector2 pixelPos = new Vector2(Mathf.InverseLerp(canvasCollider.bounds.min.x, canvasCollider.bounds.max.x, pos.x), 
+                Mathf.InverseLerp(canvasCollider.bounds.min.y, canvasCollider.bounds.max.y, pos.y)) * m_Resolution;
 
             m_ComputeShader.SetFloats("CurrentPosition", (int)pixelPos.x, (int)pixelPos.y);
             m_ComputeShader.SetFloats("LastPosition", (int)m_LastPoint.x, (int)m_LastPoint.y);

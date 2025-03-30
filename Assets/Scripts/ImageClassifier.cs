@@ -2,6 +2,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Collections;
+using TMPro;
 
 public class ImageClassifier : MonoBehaviour
 {
@@ -14,6 +16,9 @@ public class ImageClassifier : MonoBehaviour
     byte[] m_Labels;
 
     double[][] m_ImageValues;
+    Texture2D texture;
+    [SerializeField] Painter m_Painter;
+    [SerializeField] TMP_Text m_Text;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -32,36 +37,14 @@ public class ImageClassifier : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers, 
+        texture = new Texture2D(28, 28, TextureFormat.RGB24, false);
+        RenderTexture.active = m_Painter.m_DrawTexture;
+        ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation);
-
-        (m_ImagesLoaded, m_ImageHeight, m_ImageWidth, m_Images) = 
-            DataManager.LoadImages(m_TrainingImagePath, 0);
-
-        (m_LabelsLoaded, m_Labels) =
-            DataManager.LoadLabels(m_TrainingLabelPath, 0);
-
-        m_ImageValues = new double[m_Images.Length][];
-        for(int i = 0; i < m_Images.Length; i++)
-        {
-            m_ImageValues[i] = new double[m_Images[i].Length];
-            for(int j = 0; j < m_Images[i].Length; j++)
-            {
-                m_ImageValues[i][j] = (double)m_Images[i][j] / 255;
-            }
-        }
-
-        int noOfIter = m_ImagesLoaded > m_LabelsLoaded ? m_LabelsLoaded : m_ImagesLoaded;
-        noOfIter = noOfIter > m_NoOfDataPointsToTrain ? m_NoOfDataPointsToTrain : noOfIter;
-        for(int i = 0; i < m_Epochs; i++)
-        {
-            for(int j = 0; j < noOfIter; j++)
-            {
-                List<double> predicted = ann.Train(m_ImageValues[j].ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
-                //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
-                Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
-            }
-        }
+        SetupImages();
+        StartTraining();
+        
+        StartCoroutine(PredictCanvas());
         Debug.Log("Done");
     }
 
@@ -69,6 +52,54 @@ public class ImageClassifier : MonoBehaviour
     void Update()
     {
         
+    }
+    IEnumerator PredictCanvas()
+    {
+        yield return null;
+        texture.ReadPixels(new Rect(0, 0, m_Painter.m_DrawTexture.width, m_Painter.m_DrawTexture.height), 0, 0);
+        List<double> pixels = new List<double>();
+        Color[] colArr = texture.GetPixels(0, 0, texture.width, texture.height);
+        for (int i = 0; i < colArr.Length; i++)
+        {
+            pixels.Add(colArr[i].r);
+        }
+        List<double> predicted = ann.Test(pixels);
+
+        m_Text.text = OutputToLabelValue(predicted).ToString();
+
+        StartCoroutine(PredictCanvas());
+    }
+    void SetupImages()
+    {
+        (m_ImagesLoaded, m_ImageHeight, m_ImageWidth, m_Images) =
+            DataManager.LoadImages(m_TrainingImagePath, 0);
+
+        (m_LabelsLoaded, m_Labels) =
+            DataManager.LoadLabels(m_TrainingLabelPath, 0);
+
+        m_ImageValues = new double[m_Images.Length][];
+        for (int i = 0; i < m_Images.Length; i++)
+        {
+            m_ImageValues[i] = new double[m_Images[i].Length];
+            for (int j = 0; j < m_Images[i].Length; j++)
+            {
+                m_ImageValues[i][j] = (double)m_Images[i][j] / 255;
+            }
+        }
+    }
+    void StartTraining()
+    {
+        int noOfIter = m_ImagesLoaded > m_LabelsLoaded ? m_LabelsLoaded : m_ImagesLoaded;
+        noOfIter = noOfIter > m_NoOfDataPointsToTrain ? m_NoOfDataPointsToTrain : noOfIter;
+        for (int i = 0; i < m_Epochs; i++)
+        {
+            for (int j = 0; j < noOfIter; j++)
+            {
+                List<double> predicted = ann.Train(m_ImageValues[j].ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
+                Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
+            }
+        }
     }
     string PrintList<T>(List<T> list)
     {

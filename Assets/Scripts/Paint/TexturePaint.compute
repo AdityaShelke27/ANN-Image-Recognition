@@ -5,6 +5,8 @@
 // with cs.SetTexture
 RWTexture2D<float4> Result;
 float SmoothStep;
+float Strength;
+float val = 1;
 
 float2 CurrentPosition;
 float2 LastPosition;
@@ -25,10 +27,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 float dist = length(float2(posCount.x - id.x, posCount.y - id.y));
                 if (dist < SmoothStep)
                 {
-                    float val = (SmoothStep - dist) / SmoothStep;
+                    val = 1; //(SmoothStep - (dist / Strength)) / SmoothStep;
         
                     Result[id.xy] = float4(val, val, val, 1);
                 }
+                /*if (posCount.x == id.x && posCount.y == id.y)
+                    Result[id.xy] = float4(val, val, val, 1);*/
 
             }
             isXTurn = !isXTurn;
@@ -41,10 +45,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 float dist = length(float2(posCount.x - id.x, posCount.y - id.y));
                 if (dist < SmoothStep)
                 {
-                    float val = (SmoothStep - dist) / SmoothStep;
+                    val = 1; //(SmoothStep - (dist / Strength)) / SmoothStep;
         
                     Result[id.xy] = float4(val, val, val, 1);
                 }
+                
+                /*if (posCount.x == id.x && posCount.y == id.y)
+                    Result[id.xy] = float4(val, val, val, 1);*/
             }
             isXTurn = !isXTurn;
         }
