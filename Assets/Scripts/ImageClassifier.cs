@@ -19,6 +19,7 @@ public class ImageClassifier : MonoBehaviour
     Texture2D texture;
     [SerializeField] Painter m_Painter;
     [SerializeField] TMP_Text m_Text;
+    [SerializeField] SwitchImages m_SwitchImages;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -37,8 +38,8 @@ public class ImageClassifier : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        texture = new Texture2D(28, 28, TextureFormat.RGB24, false);
-        RenderTexture.active = m_Painter.m_DrawTexture;
+        texture = new Texture2D(28, 28, TextureFormat.RGBA32, false);
+        //RenderTexture.active = m_Painter.m_DrawTexture;
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation);
         SetupImages();
@@ -56,17 +57,20 @@ public class ImageClassifier : MonoBehaviour
     IEnumerator PredictCanvas()
     {
         yield return null;
+        RenderTexture.active = m_Painter.m_DrawTexture;
         texture.ReadPixels(new Rect(0, 0, m_Painter.m_DrawTexture.width, m_Painter.m_DrawTexture.height), 0, 0);
-        List<double> pixels = new List<double>();
+        texture.Apply();
+        RenderTexture.active = null;
+        List<double> pixels = new();
         Color[] colArr = texture.GetPixels(0, 0, texture.width, texture.height);
         for (int i = 0; i < colArr.Length; i++)
         {
-            pixels.Add(colArr[i].r);
+            pixels.Add((double)colArr[i].r);
         }
         List<double> predicted = ann.Test(pixels);
 
         m_Text.text = OutputToLabelValue(predicted).ToString();
-
+        //Debug.Log(OutputToLabelValue(predicted));
         StartCoroutine(PredictCanvas());
     }
     void SetupImages()
@@ -95,11 +99,29 @@ public class ImageClassifier : MonoBehaviour
         {
             for (int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(m_ImageValues[j].ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                List<double> predicted = ann.Train(BlackWhiteImage(m_ImageValues[j], 0.5f).ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
                 Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
             }
         }
+    }
+    double[] BlackWhiteImage(double[] image, float threshold)
+    {
+        double[] newImage = new double[image.Length];
+
+        for (int i = 0; i < image.Length; i++)
+        {
+            if (image[i] >= threshold)
+            {
+                newImage[i] = 1;
+            }
+            else
+            {
+                newImage[i] = 0;
+            }
+        }
+
+        return newImage;
     }
     string PrintList<T>(List<T> list)
     {
