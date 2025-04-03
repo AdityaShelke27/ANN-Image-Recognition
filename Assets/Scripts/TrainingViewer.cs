@@ -65,9 +65,9 @@ public class TrainingViewer : MonoBehaviour
                 }
                 if(j % m_MiniBatchSize == 0)
                 {
-                    m_DrawTexture.SetPixel((j * (i + 1)) / m_MiniBatchSize, (m_NumberOfCorrect * 100) / m_MiniBatchSize, Color.green);
+                    m_DrawTexture.SetPixel((j + (i * noOfIter)) / m_MiniBatchSize, (m_NumberOfCorrect * 100) / m_MiniBatchSize, Color.green);
                     m_DrawTexture.Apply();
-                    Debug.Log($"{j} {m_MiniBatchSize} {(j * (i + 1)) / m_MiniBatchSize}");
+                    Debug.Log($"{j} {m_MiniBatchSize} {(j + (i * noOfIter)) / m_MiniBatchSize}");
                     m_NumberOfCorrect = 0;
                     yield return null;
                 }

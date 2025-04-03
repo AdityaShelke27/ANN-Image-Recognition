@@ -124,7 +124,7 @@ public class ANN
                 {
 
                     error = desiredOutputs[j] - outputs[j];
-                    layers[i].neurons[j].errorGradient = outputs[j] * (1 - outputs[j]) * error;
+                    layers[i].neurons[j].errorGradient = -error;
                 }
                 else
                 {
@@ -134,7 +134,7 @@ public class ANN
                         sumError += layers[i + 1].neurons[k].errorGradient * layers[i + 1].neurons[k].weights[j];
                     }
 
-                    layers[i].neurons[j].errorGradient = layers[i].neurons[j].output * (1 - layers[i].neurons[j].output) * sumError;
+                    layers[i].neurons[j].errorGradient = ReluDerivative(layers[i].neurons[j].output) * sumError;
                 }
 
                 for (int k = 0; k < layers[i].neurons[j].numInputs; k++)
@@ -297,6 +297,19 @@ public class ANN
         //}
         result = System.Math.Clamp(result, -1, 1);
         return result;
+    }
+    double SigmoidDerivative(double val)
+    {
+        return val * (1 - val);
+    }
+    double ReluDerivative(double val)
+    {
+        if(val > 0)
+        {
+            return 1;
+        }
+
+        return 0;
     }
     double Step(double input)
     {

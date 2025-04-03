@@ -15,6 +15,7 @@ public class SwitchImages : MonoBehaviour
     uint[] m_ComputeShaderThreadGroup = new uint[3];
 
     float[][] m_ImageValues;
+    [SerializeField] float[] m_Kernel;
     [SerializeField] string m_TrainingImagePath;
     [SerializeField] string m_TrainingLabelPath;
     [SerializeField] int m_Resolution;
@@ -60,7 +61,7 @@ public class SwitchImages : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
-        image = BlackWhiteImage(image, 0.5f);
+        image = KerneledImage(BlackWhiteImage(image, 0.5f), m_Kernel);
         m_ImageBuffer = new ComputeBuffer(image.Length, sizeof(float));
         m_ImageBuffer.SetData(image);
         m_SetImageShader.SetBuffer(0, "Data", m_ImageBuffer);
@@ -110,6 +111,33 @@ public class SwitchImages : MonoBehaviour
             {
                 newImage[i] = 0;
             }
+        }
+
+        return newImage;
+    }
+    float[] KerneledImage(float[] image, float[] kernel)
+    {
+        int imageLength = (int)Mathf.Sqrt(image.Length);
+        int kernelLength = (int)Mathf.Sqrt(kernel.Length);
+
+        int clampVal = image.Length - kernel.Length + 1;
+        float[] newImage = new float[(int)Mathf.Pow(clampVal, 2)];
+        int counter = 0;
+        for (int i = 0; i < image.Length - clampVal; i++)
+        {
+            if ((i % imageLength) >= clampVal)
+            {
+                continue;
+            }
+            float sum = 0;
+            for (int j = 0; j < kernel.Length; j++)
+            {
+                Debug.Log($"{i + ((j / kernelLength) * imageLength) + (j % kernelLength)} {image.Length} {i} {((j / kernelLength) * imageLength)} {(j % kernelLength)}");
+                sum += image[i + ((j / kernelLength) * imageLength) + (j % kernelLength)] * kernel[j];
+            }
+
+            newImage[counter] = (float)sum / kernelLength;
+            counter++;
         }
 
         return newImage;

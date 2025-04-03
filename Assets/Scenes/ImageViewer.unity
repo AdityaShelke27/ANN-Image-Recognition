@@ -163,6 +163,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b4039937a3f1894dab66c9f76e011d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Kernel:
+  - 1
+  - 0
+  - 1
+  - 1
+  - 0
+  - 1
+  - 1
+  - 0
+  - 1
   m_TrainingImagePath: /ProperDataset/TrainImages
   m_TrainingLabelPath: /ProperDataset/TrainLabels
   m_Resolution: 28
@@ -872,7 +882,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 242, y: 0.0000076294}
+  m_AnchoredPosition: {x: 367, y: 0}
   m_SizeDelta: {x: 97.7639, y: 88.2209}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1809841241
@@ -1005,7 +1015,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -241, y: -0.0000038147}
+  m_AnchoredPosition: {x: -367, y: 0}
   m_SizeDelta: {x: 97.7639, y: 88.2209}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2109309101
