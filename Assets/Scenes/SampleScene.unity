@@ -328,6 +328,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb3427fa70ae6e44191d97b983760f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_BlackWhiteThreshold: 0.5
   m_Painter: {fileID: 1192906114}
   m_Text: {fileID: 113424478}
   m_SwitchImages: {fileID: 0}

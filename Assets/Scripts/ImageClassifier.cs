@@ -17,6 +17,13 @@ public class ImageClassifier : MonoBehaviour
 
     double[][] m_ImageValues;
     Texture2D texture;
+    float[][] m_Kernel = new float[][] { 
+        new float[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 }, 
+        new float[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 }, 
+        new float[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 }, 
+        new float[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+    };
+    [SerializeField] float m_BlackWhiteThreshold;
     [SerializeField] Painter m_Painter;
     [SerializeField] TMP_Text m_Text;
     [SerializeField] SwitchImages m_SwitchImages;
@@ -99,29 +106,11 @@ public class ImageClassifier : MonoBehaviour
         {
             for (int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(BlackWhiteImage(m_ImageValues[j], 0.5f).ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                List<double> predicted = ann.Train(ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold).ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
                 Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
             }
         }
-    }
-    double[] BlackWhiteImage(double[] image, float threshold)
-    {
-        double[] newImage = new double[image.Length];
-
-        for (int i = 0; i < image.Length; i++)
-        {
-            if (image[i] >= threshold)
-            {
-                newImage[i] = 1;
-            }
-            else
-            {
-                newImage[i] = 0;
-            }
-        }
-
-        return newImage;
     }
     string PrintList<T>(List<T> list)
     {

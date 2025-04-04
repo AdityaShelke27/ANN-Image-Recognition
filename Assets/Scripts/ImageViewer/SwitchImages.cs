@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SwitchImages : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class SwitchImages : MonoBehaviour
     uint[] m_ComputeShaderThreadGroup = new uint[3];
 
     float[][] m_ImageValues;
+    [SerializeField] float m_BlackWhiteThreshold;
     [SerializeField] float[] m_Kernel;
     [SerializeField] string m_TrainingImagePath;
     [SerializeField] string m_TrainingLabelPath;
@@ -26,8 +28,7 @@ public class SwitchImages : MonoBehaviour
     {
         m_ImageTexture = CreateTexture();
         m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
-        m_SetImageShader.SetTexture(0, "Result", m_ImageTexture);
-        m_SetImageShader.SetInt("Resolution", m_Resolution);
+        
         m_SetImageShader.GetKernelThreadGroupSizes(0, out m_ComputeShaderThreadGroup[0],
             out m_ComputeShaderThreadGroup[1], out m_ComputeShaderThreadGroup[2]);
 
@@ -61,13 +62,23 @@ public class SwitchImages : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
-        image = KerneledImage(BlackWhiteImage(image, 0.5f), m_Kernel);
+        image = ImageProcessor.BlackWhiteImage(image, m_BlackWhiteThreshold);
+        image = ImageProcessor.KerneledImage(image, m_Kernel);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel);
+        image = ImageProcessor.MaxPool(image, 2);
+
+        m_Resolution = (int) Mathf.Sqrt(image.Length);
+        m_ImageTexture = CreateTexture();
+        m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
+        m_SetImageShader.SetTexture(0, "Result", m_ImageTexture);
+        m_SetImageShader.SetInt("Resolution", m_Resolution);
         m_ImageBuffer = new ComputeBuffer(image.Length, sizeof(float));
         m_ImageBuffer.SetData(image);
         m_SetImageShader.SetBuffer(0, "Data", m_ImageBuffer);
-        m_SetImageShader.Dispatch(0, (int)(m_Resolution / m_ComputeShaderThreadGroup[0]),
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[1]),
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[2]));
+        m_SetImageShader.Dispatch(0, (int)(m_Resolution / m_ComputeShaderThreadGroup[0]) + 1,
+                (int)(m_Resolution / m_ComputeShaderThreadGroup[1]) + 1,
+                (int)(m_Resolution / m_ComputeShaderThreadGroup[2]) + 1);
         m_ImageBuffer.Dispose();
     }
     RenderTexture CreateTexture()
@@ -95,51 +106,5 @@ public class SwitchImages : MonoBehaviour
         }
 
         ApplyImage(m_ImageValues[m_CurrentImageIdx]);
-    }
-
-    float[] BlackWhiteImage(float[] image, float threshold)
-    {
-        float[] newImage = new float[image.Length];
-
-        for(int i = 0; i < image.Length; i++)
-        {
-            if (image[i] >= threshold)
-            {
-                newImage[i] = 1;
-            }
-            else
-            {
-                newImage[i] = 0;
-            }
-        }
-
-        return newImage;
-    }
-    float[] KerneledImage(float[] image, float[] kernel)
-    {
-        int imageLength = (int)Mathf.Sqrt(image.Length);
-        int kernelLength = (int)Mathf.Sqrt(kernel.Length);
-
-        int clampVal = image.Length - kernel.Length + 1;
-        float[] newImage = new float[(int)Mathf.Pow(clampVal, 2)];
-        int counter = 0;
-        for (int i = 0; i < image.Length - clampVal; i++)
-        {
-            if ((i % imageLength) >= clampVal)
-            {
-                continue;
-            }
-            float sum = 0;
-            for (int j = 0; j < kernel.Length; j++)
-            {
-                Debug.Log($"{i + ((j / kernelLength) * imageLength) + (j % kernelLength)} {image.Length} {i} {((j / kernelLength) * imageLength)} {(j % kernelLength)}");
-                sum += image[i + ((j / kernelLength) * imageLength) + (j % kernelLength)] * kernel[j];
-            }
-
-            newImage[counter] = (float)sum / kernelLength;
-            counter++;
-        }
-
-        return newImage;
     }
 }

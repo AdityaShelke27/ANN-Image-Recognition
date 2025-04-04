@@ -163,19 +163,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b4039937a3f1894dab66c9f76e011d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_BlackWhiteThreshold: 0.8
   m_Kernel:
   - 1
-  - 0
-  - 1
-  - 1
-  - 0
-  - 1
+  - 2
   - 1
   - 0
-  - 1
+  - 0
+  - 0
+  - -1
+  - -2
+  - -1
   m_TrainingImagePath: /ProperDataset/TrainImages
   m_TrainingLabelPath: /ProperDataset/TrainLabels
-  m_Resolution: 28
+  m_Resolution: 0
   m_SetImageShader: {fileID: 7200000, guid: ab20646a24b0b144a8da31fee20483c6, type: 3}
   m_Canvas: {fileID: 1497924977}
 --- !u!1 &519420028
