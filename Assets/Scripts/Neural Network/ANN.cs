@@ -21,9 +21,11 @@ public class ANN
     Activation hiddenActivation;
     Activation outputActivation;
     public double alpha;
+    public double regularizationFactor;
+    public int batchCount;
     public List<Layer> layers = new List<Layer>();
 
-    public ANN(int nI, int nO, int nH, int nPH, double a, Activation hiddenActivation, Activation outputActivation)
+    public ANN(int nI, int nO, int nH, int nPH, double a, Activation hiddenActivation, Activation outputActivation, double regularizationFactor, int batchCount)
     {
         numInputs = nI;
         numOutputs = nO;
@@ -49,12 +51,14 @@ public class ANN
 
         this.hiddenActivation = hiddenActivation;
         this.outputActivation = outputActivation;
+        this.regularizationFactor = regularizationFactor;
+        this.batchCount = batchCount;
     }
 
     public List<double> Train(List<double> inputValues, List<double> desiredOutput)
     {
         List<double> output = Test(inputValues);
-        UpdateWeights(output, desiredOutput);
+        AccumulateGradients(output, desiredOutput);
 
         return output;
     }
@@ -112,7 +116,7 @@ public class ANN
         return outputs;
     }
 
-    void UpdateWeights(List<double> outputs, List<double> desiredOutputs)
+    void AccumulateGradients(List<double> outputs, List<double> desiredOutputs)
     {
         double error;
 
@@ -120,11 +124,12 @@ public class ANN
         {
             for (int j = 0; j < layers[i].numNeurons; j++)
             {
+                Neuron neuron = layers[i].neurons[j];
                 if (i == numHidden)
                 {
 
                     error = desiredOutputs[j] - outputs[j];
-                    layers[i].neurons[j].errorGradient = -error;
+                    neuron.errorGradient = error;
                 }
                 else
                 {
@@ -134,23 +139,47 @@ public class ANN
                         sumError += layers[i + 1].neurons[k].errorGradient * layers[i + 1].neurons[k].weights[j];
                     }
 
-                    layers[i].neurons[j].errorGradient = ReluDerivative(layers[i].neurons[j].output) * sumError;
+                    neuron.errorGradient = ReluDerivative(neuron.output) * sumError;
                 }
 
-                for (int k = 0; k < layers[i].neurons[j].numInputs; k++)
+                for (int k = 0; k < neuron.numInputs; k++)
                 {
-                    if (i == numHidden)
+                    double gradient = (i == numHidden) ?
+                    (desiredOutputs[j] - outputs[j]) * neuron.inputs[k] :
+                    neuron.errorGradient * neuron.inputs[k];
+                    /*if (i == numHidden)
                     {
                         error = desiredOutputs[j] - outputs[j];
-                        layers[i].neurons[j].weights[k] += alpha * layers[i].neurons[j].inputs[k] * error;
+                        layers[i].neurons[j].weights[k] += alpha * (layers[i].neurons[j].inputs[k] * error + (regularizationFactor * layers[i].neurons[j].weights[k]));
                     }
                     else
                     {
-                        layers[i].neurons[j].weights[k] += alpha * layers[i].neurons[j].inputs[k] * layers[i].neurons[j].errorGradient;
-                    }
+                        layers[i].neurons[j].weights[k] += alpha * (layers[i].neurons[j].inputs[k] * layers[i].neurons[j].errorGradient + (regularizationFactor * layers[i].neurons[j].weights[k]));
+                    }*/
+                    neuron.weightGradients[k] += gradient;
                 }
 
-                layers[i].neurons[j].bias -= alpha * layers[i].neurons[j].errorGradient;
+                //layers[i].neurons[j].bias += alpha * (layers[i].neurons[j].errorGradient + (regularizationFactor * layers[i].neurons[j].bias));
+                neuron.biasGradient += neuron.errorGradient;
+            }
+        }
+    }
+    public void ApplyGradients(int batchSize)
+    {
+        for (int i = 0; i <= numHidden; i++)
+        {
+            foreach (var neuron in layers[i].neurons)
+            {
+                for (int k = 0; k < neuron.numInputs; k++)
+                {
+                    double regTerm = regularizationFactor * neuron.weights[k];
+                    neuron.weights[k] += alpha * ((neuron.weightGradients[k] / batchSize) + regTerm);
+                    neuron.weightGradients[k] = 0; // Clear after apply
+                }
+
+                double regBiasTerm = regularizationFactor * neuron.bias;
+                neuron.bias += alpha * ((neuron.biasGradient / batchSize) + regBiasTerm);
+                neuron.biasGradient = 0;
             }
         }
     }

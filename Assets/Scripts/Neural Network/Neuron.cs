@@ -12,6 +12,9 @@ public class Neuron
     public double output;
     public double errorGradient;
 
+    public List<double> weightGradients;
+    public double biasGradient;
+
     public Neuron(int nInputs)
     {
         numInputs = nInputs;
@@ -23,5 +26,13 @@ public class Neuron
         {
             weights.Add(Random.Range(-1f, 1f));
         }
+
+        InitializeGradients();
+    }
+
+    public void InitializeGradients()
+    {
+        weightGradients = new List<double>(new double[numInputs]);
+        biasGradient = 0.0;
     }
 }

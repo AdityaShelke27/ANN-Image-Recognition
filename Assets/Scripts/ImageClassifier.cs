@@ -33,6 +33,7 @@ public class ImageClassifier : MonoBehaviour
     [SerializeField] string m_TrainingLabelPath;
     [SerializeField] int m_Epochs;
     [SerializeField] int m_NoOfDataPointsToTrain;
+    [SerializeField] int m_MiniBatchSize;
 
     [Header("ANN Parameters")]
     [SerializeField] int m_NoOfInputs;
@@ -40,6 +41,7 @@ public class ImageClassifier : MonoBehaviour
     [SerializeField] int m_NoOfHiddenLayers;
     [SerializeField] int m_NoOfNeuronsPerHiddenLayers;
     [SerializeField] float m_LearningRate;
+    [SerializeField] double m_RegularizationFactor;
     [SerializeField] Activation m_HiddenActivation;
     [SerializeField] Activation m_OutputActivation;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -48,7 +50,7 @@ public class ImageClassifier : MonoBehaviour
         texture = new Texture2D(28, 28, TextureFormat.RGBA32, false);
         //RenderTexture.active = m_Painter.m_DrawTexture;
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
-            m_LearningRate, m_HiddenActivation, m_OutputActivation);
+            m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
         SetupImages();
         StartTraining();
         
@@ -100,6 +102,7 @@ public class ImageClassifier : MonoBehaviour
     }
     void StartTraining()
     {
+        int batchCount = 0;
         int noOfIter = m_ImagesLoaded > m_LabelsLoaded ? m_LabelsLoaded : m_ImagesLoaded;
         noOfIter = noOfIter > m_NoOfDataPointsToTrain ? m_NoOfDataPointsToTrain : noOfIter;
         for (int i = 0; i < m_Epochs; i++)
@@ -107,8 +110,15 @@ public class ImageClassifier : MonoBehaviour
             for (int j = 0; j < noOfIter; j++)
             {
                 List<double> predicted = ann.Train(ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold).ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                batchCount++;
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
-                Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
+                
+                if(batchCount >= m_MiniBatchSize)
+                {
+                    Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
+                    ann.ApplyGradients(m_MiniBatchSize);
+                    batchCount = 0;
+                }
             }
         }
     }

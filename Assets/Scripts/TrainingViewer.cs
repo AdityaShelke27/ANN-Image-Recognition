@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class TrainingViewer : MonoBehaviour
@@ -38,6 +36,12 @@ public class TrainingViewer : MonoBehaviour
     [SerializeField] int m_Epochs;
     [SerializeField] int m_MiniBatchSize;
     [SerializeField] float m_BlackWhiteThreshold;
+    double[][] m_Kernel = new double[][] {
+        new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
+        new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
+        new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
+        new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+    };
 
     [Header("ANN Parameters")]
     [SerializeField] int m_NoOfInputs;
@@ -45,13 +49,14 @@ public class TrainingViewer : MonoBehaviour
     [SerializeField] int m_NoOfHiddenLayers;
     [SerializeField] int m_NoOfNeuronsPerHiddenLayers;
     [SerializeField] float m_LearningRate;
+    [SerializeField] double m_RegularizationFactor;
     [SerializeField] Activation m_HiddenActivation;
     [SerializeField] Activation m_OutputActivation;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
-            m_LearningRate, m_HiddenActivation, m_OutputActivation);
+            m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
 
         SetupTrainingImages();
         SetupTestingImages();
@@ -61,28 +66,48 @@ public class TrainingViewer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
     IEnumerator StartTraining()
     {
         for (int i = 0; i < m_Epochs; i++)
         {
+            int batchCount = 0;
             int noOfIter = m_TrainingImagesLoaded > m_TrainingLabelsLoaded ? m_TrainingLabelsLoaded : m_TrainingImagesLoaded;
             for (int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold).ToList(), LabelToOutputValue(m_TrainingLabels[j]).ConvertAll(x => (double)x));
+                double[] image;
+                List<double> inputs = new();
+                for (int kels = 0; kels < m_Kernel.Length; kels++)
+                {
+                    image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
+                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);
+                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);
+
+                    for (int pxl = 0; pxl < image.Length; pxl++)
+                    {
+                        inputs.Add(image[pxl]);
+                    }
+                }
+
+                List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]).ConvertAll(x => (double)x));
+                batchCount++;
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
                 //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
-                if(OutputToLabelValue(predicted) == m_TrainingLabels[j])
+                if (OutputToLabelValue(predicted) == m_TrainingLabels[j])
                 {
                     m_NumberOfCorrectTraining++;
                 }
-                if(j % m_MiniBatchSize == 0)
+                if (batchCount >= m_MiniBatchSize)
                 {
+                    ann.ApplyGradients(m_MiniBatchSize);
                     m_LineRendererTraining.positionCount++;
-                    m_LineRendererTraining.SetPosition((j + (i * noOfIter)) / m_MiniBatchSize, new Vector3((j + (i * noOfIter)) / m_MiniBatchSize, (m_NumberOfCorrectTraining * 100) / m_MiniBatchSize, 0));
-                    Debug.Log($"{j} {m_MiniBatchSize} {(j + (i * noOfIter)) / m_MiniBatchSize}");
+                    m_LineRendererTraining.SetPosition(m_LineRendererTraining.positionCount - 1, new Vector3(m_LineRendererTraining.positionCount - 1, (float)(m_NumberOfCorrectTraining * 100) / m_MiniBatchSize, 0));
+                    Debug.Log($"{j} {m_MiniBatchSize} {m_LineRendererTraining.positionCount - 1}");
                     m_NumberOfCorrectTraining = 0;
+                    batchCount = 0;
                     yield return null;
                 }
             }
@@ -93,21 +118,39 @@ public class TrainingViewer : MonoBehaviour
     IEnumerator StartTesting()
     {
         int miniBatchTest = m_MiniBatchSize / 10;
+        int batchCount = 0;
         int noOfIter = m_TestingImagesLoaded > m_TestingLabelsLoaded ? m_TestingLabelsLoaded : m_TestingImagesLoaded;
         for (int j = 0; j < noOfIter; j++)
         {
-            List<double> predicted = ann.Test(BlackWhiteImage(m_TestingImageValues[j], m_BlackWhiteThreshold).ToList());
+            double[] image;
+            List<double> inputs = new();
+            for (int kels = 0; kels < m_Kernel.Length; kels++)
+            {
+                image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
+                image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                image = ImageProcessor.MaxPool(image, 2);
+                image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                image = ImageProcessor.MaxPool(image, 2);
+
+                for (int pxl = 0; pxl < image.Length; pxl++)
+                {
+                    inputs.Add(image[pxl]);
+                }
+            }
+            List<double> predicted = ann.Test(inputs);
+            batchCount++;
             //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
             //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
             if (OutputToLabelValue(predicted) == m_TestingLabels[j])
             {
                 m_NumberOfCorrectTesting++;
             }
-            if (j % miniBatchTest == 0)
+            if (batchCount >= miniBatchTest)
             {
                 m_LineRendererTesting.positionCount++;
-                m_LineRendererTesting.SetPosition(j / miniBatchTest, new Vector3(j / miniBatchTest, (m_NumberOfCorrectTesting * 100) / miniBatchTest, 0));
-                Debug.Log($"{j} {miniBatchTest} {j / miniBatchTest}");
+                m_LineRendererTesting.SetPosition(m_LineRendererTesting.positionCount - 1, new Vector3(m_LineRendererTesting.positionCount - 1, (float)(m_NumberOfCorrectTesting * 100) / miniBatchTest, 0));
+                Debug.Log($"{j} {miniBatchTest} {m_LineRendererTesting.positionCount - 1}");
+                batchCount = 0;
                 m_NumberOfCorrectTesting = 0;
                 yield return null;
             }

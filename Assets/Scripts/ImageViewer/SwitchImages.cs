@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SwitchImages : MonoBehaviour
 {
@@ -64,9 +63,13 @@ public class SwitchImages : MonoBehaviour
     {
         image = ImageProcessor.BlackWhiteImage(image, m_BlackWhiteThreshold);
         image = ImageProcessor.KerneledImage(image, m_Kernel);
+        Debug.Log(Mathf.Sqrt(image.Length) + " 1");
         image = ImageProcessor.MaxPool(image, 2);
+        Debug.Log(Mathf.Sqrt(image.Length) + " 2");
         image = ImageProcessor.KerneledImage(image, m_Kernel);
+        Debug.Log(Mathf.Sqrt(image.Length) + " 3");
         image = ImageProcessor.MaxPool(image, 2);
+        Debug.Log(Mathf.Sqrt(image.Length) + " 4");
 
         m_Resolution = (int) Mathf.Sqrt(image.Length);
         m_ImageTexture = CreateTexture();
