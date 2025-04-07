@@ -346,6 +346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasCollider: {fileID: 0}
   m_Resolution: 105
+  m_DataPerPoint: 1000
   m_LineRendererTraining: {fileID: 128475858}
   m_LineRendererTesting: {fileID: 1525312277}
   m_TrainingImagePath: /ProperDataset/TrainImages
@@ -353,14 +354,14 @@ MonoBehaviour:
   m_TestingImagePath: /ProperDataset/TestImages
   m_TestingLabelPath: /ProperDataset/TestLabels
   m_Epochs: 3
-  m_MiniBatchSize: 128
+  m_MiniBatchSize: 10
   m_BlackWhiteThreshold: 0.7
-  m_NoOfInputs: 144
+  m_NoOfInputs: 784
   m_NoOfOutputs: 10
   m_NoOfHiddenLayers: 1
-  m_NoOfNeuronsPerHiddenLayers: 64
+  m_NoOfNeuronsPerHiddenLayers: 100
   m_LearningRate: 0.01
-  m_RegularizationFactor: 0.1
+  m_RegularizationFactor: 0
   m_HiddenActivation: 3
   m_OutputActivation: 5
 --- !u!1 &519420028
@@ -449,7 +450,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 95.383, y: 50, z: -10}
+  m_LocalPosition: {x: 117.4, y: 50, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

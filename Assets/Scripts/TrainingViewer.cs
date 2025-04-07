@@ -6,6 +6,7 @@ public class TrainingViewer : MonoBehaviour
 {
     public BoxCollider2D canvasCollider;
     [SerializeField] int m_Resolution;
+    [SerializeField] int m_DataPerPoint;
 
     ANN ann;
     int m_TrainingImagesLoaded;
@@ -73,18 +74,19 @@ public class TrainingViewer : MonoBehaviour
         for (int i = 0; i < m_Epochs; i++)
         {
             int batchCount = 0;
+            int dataCount = 0;
             int noOfIter = m_TrainingImagesLoaded > m_TrainingLabelsLoaded ? m_TrainingLabelsLoaded : m_TrainingImagesLoaded;
             for (int j = 0; j < noOfIter; j++)
             {
                 double[] image;
                 List<double> inputs = new();
-                for (int kels = 0; kels < m_Kernel.Length; kels++)
+                //for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
-                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                    image = ImageProcessor.MaxPool(image, 2);
-                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                    image = ImageProcessor.MaxPool(image, 2);
+                    /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);*/
+                    /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);*/
 
                     for (int pxl = 0; pxl < image.Length; pxl++)
                     {
@@ -94,6 +96,7 @@ public class TrainingViewer : MonoBehaviour
 
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]).ConvertAll(x => (double)x));
                 batchCount++;
+                dataCount++;
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
                 //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
                 if (OutputToLabelValue(predicted) == m_TrainingLabels[j])
@@ -103,11 +106,17 @@ public class TrainingViewer : MonoBehaviour
                 if (batchCount >= m_MiniBatchSize)
                 {
                     ann.ApplyGradients(m_MiniBatchSize);
+                    batchCount = 0;
+                }
+
+                if(dataCount >= m_DataPerPoint)
+                {
                     m_LineRendererTraining.positionCount++;
-                    m_LineRendererTraining.SetPosition(m_LineRendererTraining.positionCount - 1, new Vector3(m_LineRendererTraining.positionCount - 1, (float)(m_NumberOfCorrectTraining * 100) / m_MiniBatchSize, 0));
+                    m_LineRendererTraining.SetPosition(m_LineRendererTraining.positionCount - 1, new Vector3(m_LineRendererTraining.positionCount - 1, (float)(m_NumberOfCorrectTraining * 100) / m_DataPerPoint, 0));
                     Debug.Log($"{j} {m_MiniBatchSize} {m_LineRendererTraining.positionCount - 1}");
                     m_NumberOfCorrectTraining = 0;
-                    batchCount = 0;
+                    dataCount = 0;
+
                     yield return null;
                 }
             }
@@ -119,18 +128,19 @@ public class TrainingViewer : MonoBehaviour
     {
         int miniBatchTest = m_MiniBatchSize / 10;
         int batchCount = 0;
+        int dataCount = 0;
         int noOfIter = m_TestingImagesLoaded > m_TestingLabelsLoaded ? m_TestingLabelsLoaded : m_TestingImagesLoaded;
         for (int j = 0; j < noOfIter; j++)
         {
             double[] image;
             List<double> inputs = new();
-            for (int kels = 0; kels < m_Kernel.Length; kels++)
+            //for (int kels = 0; kels < m_Kernel.Length; kels++)
             {
                 image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
-                image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                image = ImageProcessor.MaxPool(image, 2);
-                image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                image = ImageProcessor.MaxPool(image, 2);
+                /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                image = ImageProcessor.MaxPool(image, 2);*/
+                /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                image = ImageProcessor.MaxPool(image, 2);*/
 
                 for (int pxl = 0; pxl < image.Length; pxl++)
                 {
@@ -139,6 +149,7 @@ public class TrainingViewer : MonoBehaviour
             }
             List<double> predicted = ann.Test(inputs);
             batchCount++;
+            dataCount++;
             //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
             //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
             if (OutputToLabelValue(predicted) == m_TestingLabels[j])
@@ -147,11 +158,16 @@ public class TrainingViewer : MonoBehaviour
             }
             if (batchCount >= miniBatchTest)
             {
-                m_LineRendererTesting.positionCount++;
-                m_LineRendererTesting.SetPosition(m_LineRendererTesting.positionCount - 1, new Vector3(m_LineRendererTesting.positionCount - 1, (float)(m_NumberOfCorrectTesting * 100) / miniBatchTest, 0));
-                Debug.Log($"{j} {miniBatchTest} {m_LineRendererTesting.positionCount - 1}");
                 batchCount = 0;
+            }
+            if (dataCount >= m_DataPerPoint)
+            {
+                m_LineRendererTesting.positionCount++;
+                m_LineRendererTesting.SetPosition(m_LineRendererTesting.positionCount - 1, new Vector3(m_LineRendererTesting.positionCount - 1, (float)(m_NumberOfCorrectTesting * 100) / m_DataPerPoint, 0));
+                Debug.Log($"{j} {m_MiniBatchSize} {m_LineRendererTesting.positionCount - 1}");
                 m_NumberOfCorrectTesting = 0;
+                dataCount = 0;
+
                 yield return null;
             }
         }
