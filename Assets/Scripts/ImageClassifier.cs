@@ -17,11 +17,11 @@ public class ImageClassifier : MonoBehaviour
 
     double[][] m_ImageValues;
     Texture2D texture;
-    float[][] m_Kernel = new float[][] { 
-        new float[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 }, 
-        new float[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 }, 
-        new float[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 }, 
-        new float[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+    double[][] m_Kernel = new double[][] { 
+        new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 }, 
+        new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 }, 
+        new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 }, 
+        new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
     [SerializeField] float m_BlackWhiteThreshold;
     [SerializeField] Painter m_Painter;
@@ -76,7 +76,25 @@ public class ImageClassifier : MonoBehaviour
         {
             pixels.Add((double)colArr[i].r);
         }
-        List<double> predicted = ann.Test(pixels);
+
+        double[] image;
+        List<double> inputs = new();
+        for (int kels = 0; kels < m_Kernel.Length; kels++)
+        {
+            image = pixels.ToArray();
+            image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+            image = ImageProcessor.MaxPool(image, 2);
+            /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+            image = ImageProcessor.MaxPool(image, 2);*/
+
+            for (int pxl = 0; pxl < image.Length; pxl++)
+            {
+                inputs.Add(image[pxl]);
+            }
+        }
+
+
+        List<double> predicted = ann.Test(inputs);
 
         m_Text.text = OutputToLabelValue(predicted).ToString();
         //Debug.Log(OutputToLabelValue(predicted));
@@ -109,7 +127,22 @@ public class ImageClassifier : MonoBehaviour
         {
             for (int j = 0; j < noOfIter; j++)
             {
-                List<double> predicted = ann.Train(ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold).ToList(), LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                double[] image;
+                List<double> inputs = new();
+                for (int kels = 0; kels < m_Kernel.Length; kels++)
+                {
+                    image = ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold);
+                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);
+                    /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    image = ImageProcessor.MaxPool(image, 2);*/
+
+                    for (int pxl = 0; pxl < image.Length; pxl++)
+                    {
+                        inputs.Add(image[pxl]);
+                    }
+                }
+                List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 batchCount++;
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
                 

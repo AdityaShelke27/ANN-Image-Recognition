@@ -334,15 +334,15 @@ MonoBehaviour:
   m_SwitchImages: {fileID: 0}
   m_TrainingImagePath: /ProperDataset/TrainImages
   m_TrainingLabelPath: /ProperDataset/TrainLabels
-  m_Epochs: 1
+  m_Epochs: 2
   m_NoOfDataPointsToTrain: 60000
-  m_MiniBatchSize: 1000
-  m_NoOfInputs: 784
+  m_MiniBatchSize: 100
+  m_NoOfInputs: 676
   m_NoOfOutputs: 10
-  m_NoOfHiddenLayers: 0
-  m_NoOfNeuronsPerHiddenLayers: 0
+  m_NoOfHiddenLayers: 2
+  m_NoOfNeuronsPerHiddenLayers: 64
   m_LearningRate: 0.01
-  m_RegularizationFactor: 0.01
+  m_RegularizationFactor: 0
   m_HiddenActivation: 3
   m_OutputActivation: 5
 --- !u!4 &359670383
