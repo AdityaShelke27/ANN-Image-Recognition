@@ -8,6 +8,11 @@ public class TrainingViewer : MonoBehaviour
     [SerializeField] int m_Resolution;
     [SerializeField] int m_DataPerPoint;
 
+    GameObject tempGO;
+    SpriteRenderer sr;
+    RenderTexture rt;
+    Camera cam;
+
     ANN ann;
     int m_TrainingImagesLoaded;
     int m_TrainingImageHeight;
@@ -68,6 +73,23 @@ public class TrainingViewer : MonoBehaviour
     void Update()
     {
 
+    }
+
+    void ImageTransformInitializer()
+    {
+        tempGO = new GameObject("ImageTransform");
+        sr = tempGO.AddComponent<SpriteRenderer>();
+        rt = new RenderTexture(28, 28, 0);
+        cam = new GameObject("TempCam").AddComponent<Camera>();
+        cam.orthographic = true;
+        cam.orthographicSize = 1;
+        cam.clearFlags = CameraClearFlags.Color;
+        cam.backgroundColor = Color.white;
+    }
+    void ImageTransformDestroyer()
+    {
+        GameObject.DestroyImmediate(tempGO);
+        GameObject.DestroyImmediate(cam.gameObject);
     }
     IEnumerator StartTraining()
     {

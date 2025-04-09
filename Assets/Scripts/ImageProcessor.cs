@@ -217,4 +217,29 @@ public static class ImageProcessor
 
         return poolImage.ToArray();
     }
+
+    public static Texture2D TransformImage(Texture2D original, float rotationDegrees, Vector2 scale, Vector2 position, GameObject tempGO, SpriteRenderer sr, Camera cam, RenderTexture rt)
+    {
+        sr.sprite = Sprite.Create(original, new Rect(0, 0, original.width, original.height), new Vector2(0.5f, 0.5f));
+
+        // 2. Apply transforms
+        tempGO.transform.rotation = Quaternion.Euler(0, 0, rotationDegrees);
+        tempGO.transform.localScale = new Vector3(scale.x, scale.y, 1);
+        tempGO.transform.position = new Vector3(position.x, position.y, 0);
+
+        
+        cam.targetTexture = rt;
+        cam.Render();
+
+        // 4. Read pixels into new texture
+        RenderTexture.active = rt;
+        Texture2D result = new Texture2D(28, 28, TextureFormat.RGBA32, false);
+        result.ReadPixels(new Rect(0, 0, 28, 28), 0, 0);
+        result.Apply();
+
+        // Cleanup
+        RenderTexture.active = null;
+
+        return result;
+    }
 }
