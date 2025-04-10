@@ -6,7 +6,7 @@ public class SwitchImages : MonoBehaviour
     GameObject camGO;
     GameObject quad;
     Material mat;
-    RenderTexture rt;
+    [SerializeField] RenderTexture rt;
     Camera cam;
     MeshRenderer mr;
 
@@ -46,21 +46,12 @@ public class SwitchImages : MonoBehaviour
         ImageSetup();
         ImageTransformInitializer();
         ApplyImage(m_ImageValues[0]);
-        StartCoroutine(TransformIMG());
     }
 
     // Update is called once per frame
     void Update()
     {
         //m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
-    }
-    IEnumerator TransformIMG()
-    {
-        m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
-        m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
-        yield return new WaitForSeconds(1);
-
-        StartCoroutine(TransformIMG());
     }
     void ImageTransformInitializer()
     {
@@ -81,6 +72,8 @@ public class SwitchImages : MonoBehaviour
         rt.wrapMode = TextureWrapMode.Clamp;
 
         cam.transform.position = new Vector3(0f, 0f, -10f);
+
+        mr.material = mat;
     }
     void ImageTransformDestroyer()
     {
@@ -126,17 +119,15 @@ public class SwitchImages : MonoBehaviour
                 (int)(m_Resolution / m_ComputeShaderThreadGroup[2]) + 1);
         m_ImageBuffer.Dispose();
 
-        
+        m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
+        m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
     }
     public RenderTexture TransformRenderTexture(RenderTexture source, float rotationDegrees, Vector2 scale, Vector2 position, int outputSize = 28)
     {
-        mat.mainTexture = source;
-        mr.material = mat;
-
+        mat.mainTexture = m_ImageTexture;
         quad.transform.position = new Vector3(position.x, position.y, 0f);
         quad.transform.localScale = new Vector3(scale.x, scale.y, 1f);
         quad.transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
-        
         cam.targetTexture = rt;
         cam.Render();
 
