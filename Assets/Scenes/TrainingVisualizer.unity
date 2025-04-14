@@ -347,6 +347,9 @@ MonoBehaviour:
   canvasCollider: {fileID: 0}
   m_Resolution: 105
   m_DataPerPoint: 1000
+  rt: {fileID: 0}
+  m_SetImageShader: {fileID: 7200000, guid: ab20646a24b0b144a8da31fee20483c6, type: 3}
+  m_ImageTexture: {fileID: 0}
   m_LineRendererTraining: {fileID: 128475858}
   m_LineRendererTesting: {fileID: 1525312277}
   m_TrainingImagePath: /ProperDataset/TrainImages
