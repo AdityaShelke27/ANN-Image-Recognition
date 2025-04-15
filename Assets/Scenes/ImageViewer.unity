@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Position: {x: 0, y: 0}
-  Scale: {x: 9, y: 9}
+  Scale: {x: 1, y: 1}
   Rotation: 5
   m_ImageTexture: {fileID: 0}
   m_BlackWhiteThreshold: 0.8

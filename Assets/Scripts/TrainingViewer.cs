@@ -12,22 +12,7 @@ public class TrainingViewer : MonoBehaviour
     [SerializeField] int m_Resolution;
     [SerializeField] int m_DataPerPoint;
 
-    Texture2D texture;
-    GameObject camGO;
-    GameObject quad;
-    Material mat;
-    [SerializeField] RenderTexture rt;
-    Camera cam;
-    MeshRenderer mr;
-    [SerializeField] ComputeShader m_SetImageShader;
-
-    Vector3 OriginalPosition;
-    Vector3 OriginalRotation;
-    Vector3 OriginalScale;
-
-    ComputeBuffer m_ImageBuffer;
     [SerializeField] RenderTexture m_ImageTexture;
-    uint[] m_ComputeShaderThreadGroup = new uint[3];
 
     ANN ann;
     int m_TrainingImagesLoaded;
@@ -79,13 +64,9 @@ public class TrainingViewer : MonoBehaviour
     {
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
-        texture = new Texture2D(28, 28, TextureFormat.RGBA32, false);
 
         SetupTrainingImages();
         SetupTestingImages();
-        ImageTransformInitializer();
-        m_SetImageShader.GetKernelThreadGroupSizes(0, out m_ComputeShaderThreadGroup[0],
-            out m_ComputeShaderThreadGroup[1], out m_ComputeShaderThreadGroup[2]);
         StartCoroutine(StartTraining());
     }
 
@@ -95,86 +76,13 @@ public class TrainingViewer : MonoBehaviour
 
     }
 
-    void ImageTransformInitializer()
-    {
-        // 1. Create a temporary Camera
-        camGO = new GameObject("TempCam");
-        cam = camGO.AddComponent<Camera>();
-        cam.orthographic = true;
-        cam.orthographicSize = 5f;
-        cam.clearFlags = CameraClearFlags.Color;
-        cam.backgroundColor = Color.black;
-
-        quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        quad.transform.localScale = new Vector3(9, 9, 1);
-        mat = new Material(Shader.Find("Unlit/Texture"));
-        mr = quad.GetComponent<MeshRenderer>();
-
-        rt = new RenderTexture(28, 28, 0, RenderTextureFormat.ARGB32);
-        rt.filterMode = FilterMode.Point;
-        rt.wrapMode = TextureWrapMode.Clamp;
-
-        cam.transform.position = new Vector3(0f, 0f, -10f);
-
-        mr.material = mat;
-
-        OriginalPosition = quad.transform.position;
-        OriginalRotation = quad.transform.rotation.eulerAngles;
-        OriginalScale = quad.transform.localScale;
-    }
+   
     RenderTexture CreateTexture()
     {
         RenderTexture rt = new RenderTexture(m_Resolution, m_Resolution, 0);
         rt.filterMode = FilterMode.Point;
         rt.wrapMode = TextureWrapMode.Clamp;
         rt.enableRandomWrite = true;
-
-        return rt;
-    }
-    double[] ApplyImage(double[] image)
-    {
-        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
-        image = ImageProcessor.MaxPool(image, 2);*/
-        float[] imageNew = new float[image.Length];
-        for (int i = 0; i < image.Length; i++)
-        {
-            imageNew[i] = (float)image[i];
-        }
-        m_Resolution = (int)Mathf.Sqrt(image.Length);
-        m_ImageTexture = CreateTexture();
-        m_SetImageShader.SetTexture(0, "Result", m_ImageTexture);
-        m_SetImageShader.SetInt("Resolution", m_Resolution);
-        m_ImageBuffer = new ComputeBuffer(image.Length, sizeof(float));
-        m_ImageBuffer.SetData(imageNew);
-        m_SetImageShader.SetBuffer(0, "Data", m_ImageBuffer);
-        m_SetImageShader.Dispatch(0, (int)(m_Resolution / m_ComputeShaderThreadGroup[0]) + 1,
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[1]) + 1,
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[2]) + 1);
-        m_ImageBuffer.Dispose();
-
-        m_ImageTexture = TransformRenderTexture(m_ImageTexture, Random.Range(-5f, 5f), OriginalScale * Random.Range(0.9f, 1.1f), OriginalPosition + new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f)));
-
-        RenderTexture.active = m_ImageTexture;
-        texture.ReadPixels(new Rect(0, 0, m_ImageTexture.width, m_ImageTexture.height), 0, 0);
-        texture.Apply();
-        RenderTexture.active = null;
-        List<double> pixels = new();
-        Color[] colArr = texture.GetPixels(0, 0, texture.width, texture.height);
-        for (int i = 0; i < colArr.Length; i++)
-        {
-            pixels.Add((double)colArr[i].r);
-        }
-
-        return pixels.ToArray();
-    }
-    public RenderTexture TransformRenderTexture(RenderTexture source, float rotationDegrees, Vector2 scale, Vector2 position, int outputSize = 28)
-    {
-        mat.mainTexture = m_ImageTexture;
-        quad.transform.position = new Vector3(position.x, position.y, 0f);
-        quad.transform.localScale = new Vector3(scale.x, scale.y, 1f);
-        quad.transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
-        cam.targetTexture = rt;
-        cam.Render();
 
         return rt;
     }
@@ -192,7 +100,7 @@ public class TrainingViewer : MonoBehaviour
                 //for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
-                    image = ApplyImage(image);
+
                     yield return null;
                     /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
                     image = ImageProcessor.MaxPool(image, 2);*/

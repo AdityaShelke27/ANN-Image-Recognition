@@ -3,16 +3,11 @@ using UnityEngine;
 
 public class SwitchImages : MonoBehaviour
 {
-    GameObject camGO;
-    GameObject quad;
-    Material mat;
-    [SerializeField] RenderTexture rt;
-    Camera cam;
-    MeshRenderer mr;
-
     [SerializeField] Vector2 Position;
     [SerializeField] Vector2 Scale;
     [SerializeField] float Rotation;
+
+    float[] m_Image;
 
     int m_ImagesLoaded;
     int m_ImageHeight;
@@ -44,41 +39,14 @@ public class SwitchImages : MonoBehaviour
             out m_ComputeShaderThreadGroup[1], out m_ComputeShaderThreadGroup[2]);
 
         ImageSetup();
-        ImageTransformInitializer();
+        //ImageTransformInitializer();
         ApplyImage(m_ImageValues[0]);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
-    }
-    void ImageTransformInitializer()
-    {
-        // 1. Create a temporary Camera
-        camGO = new GameObject("TempCam");
-        cam = camGO.AddComponent<Camera>();
-        cam.orthographic = true;
-        cam.orthographicSize = 5f;
-        cam.clearFlags = CameraClearFlags.Color;
-        cam.backgroundColor = Color.black;
-
-        quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        mat = new Material(Shader.Find("Unlit/Texture"));
-        mr = quad.GetComponent<MeshRenderer>();
-
-        rt = new RenderTexture(28, 28, 0, RenderTextureFormat.ARGB32);
-        rt.filterMode = FilterMode.Point;
-        rt.wrapMode = TextureWrapMode.Clamp;
-
-        cam.transform.position = new Vector3(0f, 0f, -10f);
-
-        mr.material = mat;
-    }
-    void ImageTransformDestroyer()
-    {
-        Destroy(quad);
-        Destroy(camGO);
+        ApplyImage(m_Image);
     }
     void ImageSetup()
     {
@@ -101,8 +69,10 @@ public class SwitchImages : MonoBehaviour
     void ApplyImage(float[] image)
     {
         image = ImageProcessor.BlackWhiteImage(image, m_BlackWhiteThreshold);
-        image = ImageProcessor.KerneledImage(image, m_Kernel);
-        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.TransformTexture(image, Rotation, Scale, Position);
+        m_Image = image;
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
+        image = ImageProcessor.MaxPool(image, 2);*/
         /*image = ImageProcessor.KerneledImage(image, m_Kernel);
         image = ImageProcessor.MaxPool(image, 2);*/
 
@@ -119,19 +89,8 @@ public class SwitchImages : MonoBehaviour
                 (int)(m_Resolution / m_ComputeShaderThreadGroup[2]) + 1);
         m_ImageBuffer.Dispose();
 
-        m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
-        m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
-    }
-    public RenderTexture TransformRenderTexture(RenderTexture source, float rotationDegrees, Vector2 scale, Vector2 position, int outputSize = 28)
-    {
-        mat.mainTexture = m_ImageTexture;
-        quad.transform.position = new Vector3(position.x, position.y, 0f);
-        quad.transform.localScale = new Vector3(scale.x, scale.y, 1f);
-        quad.transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
-        cam.targetTexture = rt;
-        cam.Render();
-
-        return rt;
+       /* m_ImageTexture = TransformRenderTexture(m_ImageTexture, Rotation, Scale, Position);
+        m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;*/
     }
     RenderTexture CreateTexture()
     {

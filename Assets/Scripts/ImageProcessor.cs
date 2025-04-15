@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
+using static UnityEngine.UI.Image;
 
 public static class ImageProcessor
 {
@@ -218,28 +220,90 @@ public static class ImageProcessor
         return poolImage.ToArray();
     }
 
-    public static Texture2D TransformImage(Texture2D original, float rotationDegrees, Vector2 scale, Vector2 position, GameObject tempGO, SpriteRenderer sr, Camera cam, RenderTexture rt)
+    public static float[] TransformTexture(float[] inputTex, float rotationDegrees, Vector2 scale, Vector2 offset, int outputSize = 28)
+    {/*
+        //Texture2D outputTex = new Texture2D(outputSize, outputSize, TextureFormat.RGBA32, false);
+        float[] outputPixels = new float[outputSize * outputSize];
+
+        // Inverse transform matrix
+        float angleRad = -rotationDegrees * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(angleRad);
+        float sin = Mathf.Sin(angleRad);
+
+        float scaleX = 1f / scale.x;
+        float scaleY = 1f / scale.y;
+
+        Vector2 center = new Vector2(outputSize / 2f, outputSize / 2f);
+
+        for (int y = 0; y < outputSize; y++)
+        {
+            for (int x = 0; x < outputSize; x++)
+            {
+                // Normalize pixel to [-1,1]
+                Vector2 p = new Vector2(x, y) - center;
+
+                // Apply inverse transform: scale -> rotate -> translate
+                float u = (p.x * cos - p.y * sin) * scaleX - offset.x * outputSize + outputSize / 2f;
+                float v = (p.x * sin + p.y * cos) * scaleY - offset.y * outputSize + outputSize / 2f;
+
+                // Bilinear interpolation
+                outputPixels[y * outputSize + x] = inputTex[(int)v * outputSize + (int)u];
+            }
+        }
+
+        return outputPixels;*/
+        float[] outputPixels = new float[outputSize * outputSize];
+        if (scale.magnitude != 0)
+        {
+            Vector2 iHat = new Vector2(Mathf.Cos(rotationDegrees), Mathf.Sin(rotationDegrees)) / scale.x;
+            Vector2 jHat = new Vector2(-iHat.y, iHat.x);
+            for (int y = 0; y < outputSize; y++)
+            {
+                for (int x = 0; x < outputSize; x++)
+                {
+                    double u = x / (outputSize - 1.0);
+                    double v = y / (outputSize - 1.0);
+
+                    double uTransformed = iHat.x * (u - 0.5) + jHat.x * (v - 0.5) + 0.5 - offset.x;
+                    double vTransformed = iHat.y * (u - 0.5) + jHat.y * (v - 0.5) + 0.5 - offset.y;
+                    outputPixels[y * outputSize + x] = System.Math.Clamp(inputTex[(int)vTransformed * outputSize + (int)uTransformed], 0, 1);
+                }
+            }
+        }
+
+        return outputPixels;
+    }
+    public static double[] TransformTexture(double[] inputTex, float rotationDegrees, Vector2 scale, Vector2 offset, int outputSize = 28)
     {
-        sr.sprite = Sprite.Create(original, new Rect(0, 0, original.width, original.height), new Vector2(0.5f, 0.5f));
+        //Texture2D outputTex = new Texture2D(outputSize, outputSize, TextureFormat.RGBA32, false);
+        double[] outputPixels = new double[outputSize * outputSize];
 
-        // 2. Apply transforms
-        tempGO.transform.rotation = Quaternion.Euler(0, 0, rotationDegrees);
-        tempGO.transform.localScale = new Vector3(scale.x, scale.y, 1);
-        tempGO.transform.position = new Vector3(position.x, position.y, 0);
+        // Inverse transform matrix
+        float angleRad = -rotationDegrees * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(angleRad);
+        float sin = Mathf.Sin(angleRad);
 
-        
-        cam.targetTexture = rt;
-        cam.Render();
+        float scaleX = 1f / scale.x;
+        float scaleY = 1f / scale.y;
 
-        // 4. Read pixels into new texture
-        RenderTexture.active = rt;
-        Texture2D result = new Texture2D(28, 28, TextureFormat.RGBA32, false);
-        result.ReadPixels(new Rect(0, 0, 28, 28), 0, 0);
-        result.Apply();
+        Vector2 center = new Vector2(outputSize / 2f, outputSize / 2f);
 
-        // Cleanup
-        RenderTexture.active = null;
+        for (int y = 0; y < outputSize; y++)
+        {
+            for (int x = 0; x < outputSize; x++)
+            {
+                // Normalize pixel to [-1,1]
+                Vector2 p = new Vector2(x, y);// - center;
 
-        return result;
+                // Apply inverse transform: scale -> rotate -> translate
+                float u = (p.x * cos - p.y * sin) * scaleX - offset.x * outputSize + outputSize / 2f;
+                float v = (p.x * sin + p.y * cos) * scaleY - offset.y * outputSize + outputSize / 2f;
+
+                // Bilinear interpolation
+                outputPixels[y * outputSize + x] = inputTex[(int)v * outputSize + (int)u];
+            }
+        }
+
+        return outputPixels;
     }
 }
