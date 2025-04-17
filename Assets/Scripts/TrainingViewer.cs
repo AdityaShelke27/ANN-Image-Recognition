@@ -35,6 +35,8 @@ public class TrainingViewer : MonoBehaviour
     int m_NumberOfCorrectTesting;
     [SerializeField] LineRenderer m_LineRendererTesting;
 
+    [SerializeField] LineRenderer m_LineRendererLoss;
+
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
     [SerializeField] string m_TrainingLabelPath;
@@ -96,6 +98,7 @@ public class TrainingViewer : MonoBehaviour
             int batchCount = 0;
             int dataCount = 0;
             int noOfIter = m_TrainingImagesLoaded > m_TrainingLabelsLoaded ? m_TrainingLabelsLoaded : m_TrainingImagesLoaded;
+            double lossSum = 0;
             for (int j = 0; j < noOfIter; j++)
             {
                 double[] image;
@@ -119,6 +122,7 @@ public class TrainingViewer : MonoBehaviour
                 }
 
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]).ConvertAll(x => (double)x));
+                lossSum += -Math.Log(predicted[m_TrainingLabels[j]]);
                 batchCount++;
                 dataCount++;
                 //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
@@ -137,9 +141,12 @@ public class TrainingViewer : MonoBehaviour
                 {
                     m_LineRendererTraining.positionCount++;
                     m_LineRendererTraining.SetPosition(m_LineRendererTraining.positionCount - 1, new Vector3(m_LineRendererTraining.positionCount - 1, (float)(m_NumberOfCorrectTraining * 100) / m_DataPerPoint, 0));
+                    m_LineRendererLoss.positionCount++;
+                    m_LineRendererLoss.SetPosition(m_LineRendererLoss.positionCount - 1, new Vector3(m_LineRendererLoss.positionCount - 1, (float)lossSum / m_DataPerPoint, 0));
                     Debug.Log($"{j} {m_MiniBatchSize} {m_LineRendererTraining.positionCount - 1}");
                     m_NumberOfCorrectTraining = 0;
                     dataCount = 0;
+                    lossSum = 0;
 
                     yield return null;
                 }
@@ -278,6 +285,12 @@ public class TrainingViewer : MonoBehaviour
                 output = value[i];
                 idx = i;
             }
+        }
+
+        if(idx == -1)
+        {
+            Debug.LogWarning("Index = -1");
+            idx = 0;
         }
 
         return idx;
