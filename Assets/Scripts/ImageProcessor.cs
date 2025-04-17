@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
+using UnityEngine.Rendering;
 using static UnityEngine.UI.Image;
 
 public static class ImageProcessor
@@ -221,7 +222,7 @@ public static class ImageProcessor
     }
 
     public static float[] TransformTexture(float[] inputTex, float rotationDegrees, Vector2 scale, Vector2 offset, int outputSize = 28)
-    {/*
+    {
         //Texture2D outputTex = new Texture2D(outputSize, outputSize, TextureFormat.RGBA32, false);
         float[] outputPixels = new float[outputSize * outputSize];
 
@@ -247,12 +248,15 @@ public static class ImageProcessor
                 float v = (p.x * sin + p.y * cos) * scaleY - offset.y * outputSize + outputSize / 2f;
 
                 // Bilinear interpolation
+                //Debug.Log($"{sin} {cos}");
+                u = Mathf.Clamp(u, 0f, outputSize - 1);
+                v = Mathf.Clamp(v, 0f, outputSize - 1);
                 outputPixels[y * outputSize + x] = inputTex[(int)v * outputSize + (int)u];
             }
         }
 
-        return outputPixels;*/
-        float[] outputPixels = new float[outputSize * outputSize];
+        return outputPixels;
+        /*float[] outputPixels = new float[outputSize * outputSize];
         if (scale.magnitude != 0)
         {
             Vector2 iHat = new Vector2(Mathf.Cos(rotationDegrees), Mathf.Sin(rotationDegrees)) / scale.x;
@@ -271,7 +275,7 @@ public static class ImageProcessor
             }
         }
 
-        return outputPixels;
+        return outputPixels;*/
     }
     public static double[] TransformTexture(double[] inputTex, float rotationDegrees, Vector2 scale, Vector2 offset, int outputSize = 28)
     {
@@ -299,6 +303,8 @@ public static class ImageProcessor
                 float u = (p.x * cos - p.y * sin) * scaleX - offset.x * outputSize + outputSize / 2f;
                 float v = (p.x * sin + p.y * cos) * scaleY - offset.y * outputSize + outputSize / 2f;
 
+                u = Mathf.Clamp(u, 0f, outputSize - 1);
+                v = Mathf.Clamp(v, 0f, outputSize - 1);
                 // Bilinear interpolation
                 outputPixels[y * outputSize + x] = inputTex[(int)v * outputSize + (int)u];
             }

@@ -16,6 +16,7 @@ public class SwitchImages : MonoBehaviour
     byte[][] m_Images;
     byte[] m_Labels;
     int m_CurrentImageIdx = 0;
+    [SerializeField] bool m_ShouldApplyTransform;
 
     ComputeBuffer m_ImageBuffer;
     [SerializeField] RenderTexture m_ImageTexture;
@@ -46,7 +47,11 @@ public class SwitchImages : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ApplyImage(m_Image);
+        if(m_ShouldApplyTransform)
+        {
+            ApplyImage(m_Image);
+            m_ShouldApplyTransform = false;
+        }
     }
     void ImageSetup()
     {

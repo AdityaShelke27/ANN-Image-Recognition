@@ -43,6 +43,9 @@ public class TrainingViewer : MonoBehaviour
     [SerializeField] int m_Epochs;
     [SerializeField] int m_MiniBatchSize;
     [SerializeField] float m_BlackWhiteThreshold;
+    [SerializeField] Vector2 m_RotationRandomizer;
+    [SerializeField] Vector2 m_PositionRandomizer;
+    [SerializeField] Vector2 m_ScaleRandomizer;
     double[][] m_Kernel = new double[][] {
         new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
         new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
@@ -97,19 +100,21 @@ public class TrainingViewer : MonoBehaviour
             {
                 double[] image;
                 List<double> inputs = new();
-                //for (int kels = 0; kels < m_Kernel.Length; kels++)
+                image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
+                image = ImageProcessor.TransformTexture(image, Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y), 
+                        new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)));
+                for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
-                    image = ImageProcessor.BlackWhiteImage(m_TrainingImageValues[j], m_BlackWhiteThreshold);
-
-                    yield return null;
-                    /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                    image = ImageProcessor.MaxPool(image, 2);*/
+                    double[] kernelImage;
+                    kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
                     image = ImageProcessor.MaxPool(image, 2);*/
 
-                    for (int pxl = 0; pxl < image.Length; pxl++)
+                    for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
-                        inputs.Add(image[pxl]);
+                        inputs.Add(kernelImage[pxl]);
                     }
                 }
 
