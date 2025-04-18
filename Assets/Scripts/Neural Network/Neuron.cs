@@ -24,7 +24,10 @@ public class Neuron
 
         for (int i = 0; i < nWeights; i++)
         {
-            weights.Add(Random.Range(-1f, 1f));
+            float limit = Mathf.Sqrt(2.0f / numInputs);
+            float weight = Random.Range(-limit, limit);
+            //weights.Add(Random.Range(-1f, 1f));
+            weights.Add(weight);
         }
 
         InitializeGradients();
