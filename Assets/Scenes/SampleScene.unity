@@ -587,7 +587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvasCollider: {fileID: 1497924982}
-  m_Resolution: 1080
+  m_Resolution: 30
   m_SmoothStep: 1
   m_Strength: 1
   m_ComputeShader: {fileID: 7200000, guid: 1dd304c213db20e46a8070ab3d8b33ef, type: 3}

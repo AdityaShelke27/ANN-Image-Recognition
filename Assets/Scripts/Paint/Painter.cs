@@ -43,9 +43,9 @@ public class Painter : MonoBehaviour
 
             m_ComputeShader.SetFloats("CurrentPosition", (int)pixelPos.x, (int)pixelPos.y);
             m_ComputeShader.SetFloats("LastPosition", (int)m_LastPoint.x, (int)m_LastPoint.y);
-            m_ComputeShader.Dispatch(0, (int)(m_Resolution / m_ComputeShaderThreadGroup[0]), 
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[1]), 
-                (int)(m_Resolution / m_ComputeShaderThreadGroup[2]));
+            m_ComputeShader.Dispatch(0, (int)(m_Resolution / m_ComputeShaderThreadGroup[0]) + 1, 
+                (int)(m_Resolution / m_ComputeShaderThreadGroup[1]) + 1, 
+                (int)(m_Resolution / m_ComputeShaderThreadGroup[2]) + 1);
 
 
             m_LastPoint = pixelPos;

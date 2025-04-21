@@ -55,13 +55,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float2 acDist = normalize(id.xy - LastPosition);
     float2 abDist = normalize(CurrentPosition - LastPosition);
     float2 bcDist = normalize(id.xy - CurrentPosition);
-    float angle = 1 - dot(acDist, abDist);
+    float angle = sqrt(1 - pow(dot(acDist, abDist), 2));
     float dist = length(id.xy - LastPosition) * angle;
     float angle2 = dot(bcDist, abDist);
-    if (dist <= SmoothStep && angle2 <= 0)
+    float angle3 = dot(acDist, abDist);
+    if (dist <= SmoothStep && angle2 <= 0 && angle3 >= 0)
     {
-        float len = abs(angle2);
-        Result[id.xy] = float4(len, len, len, 1);
+        float len = angle * 10;
+        Result[id.xy] = float4(1, 0, 0, 1);
     }
-
+    //Result[id.xy] = float4(dist, dist, dist, 1);
+        
 }
