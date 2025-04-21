@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 using System.Collections;
 using TMPro;
 
@@ -34,6 +33,9 @@ public class ImageClassifier : MonoBehaviour
     [SerializeField] int m_Epochs;
     [SerializeField] int m_NoOfDataPointsToTrain;
     [SerializeField] int m_MiniBatchSize;
+    [SerializeField] Vector2 m_RotationRandomizer;
+    [SerializeField] Vector2 m_PositionRandomizer;
+    [SerializeField] Vector2 m_ScaleRandomizer;
 
     [Header("ANN Parameters")]
     [SerializeField] int m_NoOfInputs;
@@ -93,7 +95,6 @@ public class ImageClassifier : MonoBehaviour
             }
         }
 
-
         List<double> predicted = ann.Test(inputs);
 
         m_Text.text = OutputToLabelValue(predicted).ToString();
@@ -129,17 +130,22 @@ public class ImageClassifier : MonoBehaviour
             {
                 double[] image;
                 List<double> inputs = new();
+                image = ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold);
+
+                image = ImageProcessor.TransformTexture(image, Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                        new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)));
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
-                    image = ImageProcessor.BlackWhiteImage(m_ImageValues[j], m_BlackWhiteThreshold);
-                    image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                    image = ImageProcessor.MaxPool(image, 2);
+                    double[] kernelImage;
+                    kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     /*image = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
                     image = ImageProcessor.MaxPool(image, 2);*/
 
-                    for (int pxl = 0; pxl < image.Length; pxl++)
+                    for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
-                        inputs.Add(image[pxl]);
+                        inputs.Add(kernelImage[pxl]);
                     }
                 }
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));

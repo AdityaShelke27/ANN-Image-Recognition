@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
@@ -279,34 +280,34 @@ public static class ImageProcessor
     }
     public static double[] TransformTexture(double[] inputTex, float rotationDegrees, Vector2 scale, Vector2 offset, int outputSize = 28)
     {
-        //Texture2D outputTex = new Texture2D(outputSize, outputSize, TextureFormat.RGBA32, false);
         double[] outputPixels = new double[outputSize * outputSize];
 
-        // Inverse transform matrix
-        float angleRad = -rotationDegrees * Mathf.Deg2Rad;
-        float cos = Mathf.Cos(angleRad);
-        float sin = Mathf.Sin(angleRad);
+        double angleRad = -rotationDegrees * Math.PI / 180.0;
+        double cos = Math.Cos(angleRad);
+        double sin = Math.Sin(angleRad);
 
-        float scaleX = 1f / scale.x;
-        float scaleY = 1f / scale.y;
+        double scaleX = 1.0 / scale.x;
+        double scaleY = 1.0 / scale.y;
 
-        Vector2 center = new Vector2(outputSize / 2f, outputSize / 2f);
+        int inputSize = (int)Math.Sqrt(inputTex.Length);
+        double center = outputSize / 2.0;
 
         for (int y = 0; y < outputSize; y++)
         {
             for (int x = 0; x < outputSize; x++)
             {
-                // Normalize pixel to [-1,1]
-                Vector2 p = new Vector2(x, y);// - center;
+                double px = x - center;
+                double py = y - center;
 
-                // Apply inverse transform: scale -> rotate -> translate
-                float u = (p.x * cos - p.y * sin) * scaleX - offset.x * outputSize + outputSize / 2f;
-                float v = (p.x * sin + p.y * cos) * scaleY - offset.y * outputSize + outputSize / 2f;
+                double u = (px * cos - py * sin) * scaleX + center - offset.x * outputSize;
+                double v = (px * sin + py * cos) * scaleY + center - offset.y * outputSize;
 
-                u = Mathf.Clamp(u, 0f, outputSize - 1);
-                v = Mathf.Clamp(v, 0f, outputSize - 1);
-                // Bilinear interpolation
-                outputPixels[y * outputSize + x] = inputTex[(int)v * outputSize + (int)u];
+                // Clamp to valid range
+                u = Math.Max(0.0, Math.Min(u, inputSize - 1));
+                v = Math.Max(0.0, Math.Min(v, inputSize - 1));
+
+                // Nearest-neighbor sampling (can be replaced with bilinear later)
+                outputPixels[y * outputSize + x] = inputTex[(int)v * inputSize + (int)u];
             }
         }
 

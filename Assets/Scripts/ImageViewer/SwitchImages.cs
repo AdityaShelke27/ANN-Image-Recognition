@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class SwitchImages : MonoBehaviour
 {
-    [SerializeField] Vector2 Position;
-    [SerializeField] Vector2 Scale;
-    [SerializeField] float Rotation;
+    [SerializeField] Vector2 m_RotationRandomizer;
+    [SerializeField] Vector2 m_PositionRandomizer;
+    [SerializeField] Vector2 m_ScaleRandomizer;
 
     float[] m_Image;
 
@@ -74,12 +74,29 @@ public class SwitchImages : MonoBehaviour
     void ApplyImage(float[] image)
     {
         image = ImageProcessor.BlackWhiteImage(image, m_BlackWhiteThreshold);
-        image = ImageProcessor.TransformTexture(image, Rotation, Scale, Position);
+        float[] originalImage = new float[image.Length];
+        for(int i = 0; i < originalImage.Length; i++)
+        {
+            originalImage[i] = image[i];
+        }
+        /*image = ImageProcessor.TransformTexture(image, Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                        new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)));*/
+        image = ImageProcessor.TransformTexture(image, 0, Vector2.one, Vector2.zero);
+        int incorrect = 0;
+        for(int i = 0; i < image.Length; i++)
+        {
+            if (originalImage[i] != image[i])
+            {
+                incorrect++;
+            }
+        }
+        Debug.Log(incorrect);
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
+        image = ImageProcessor.MaxPool(image, 2);*/
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
+        image = ImageProcessor.MaxPool(image, 2);*/
         m_Image = image;
-        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
-        image = ImageProcessor.MaxPool(image, 2);*/
-        /*image = ImageProcessor.KerneledImage(image, m_Kernel);
-        image = ImageProcessor.MaxPool(image, 2);*/
 
         m_Resolution = (int) Mathf.Sqrt(image.Length);
         m_ImageTexture = CreateTexture();
