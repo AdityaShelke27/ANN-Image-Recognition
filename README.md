@@ -1,1 +1,0 @@
-# ANN-Image-Recognition
