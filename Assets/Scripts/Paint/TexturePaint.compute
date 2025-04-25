@@ -1,0 +1,44 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float SmoothStep;
+float Strength;
+float val = 1;
+float Resolution;
+float fadeAmount; // 0.0 - 1.0, controls how fast color blends in
+int2 offset; // minX, minY
+float2 circleCenter;
+
+float2 CurrentPosition;
+float2 LastPosition;
+
+float distanceToSegment(float2 p, float2 a, float2 b)
+{
+    float2 ab = b - a;
+    float2 ap = p - a;
+    float abLenSq = dot(ab, ab);
+    
+    float t = saturate(dot(ap, ab) / abLenSq);
+    float2 proj = a + t * ab;
+    return length(p - proj);
+}
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int2 pixel = int2(id.xy) + offset;
+    
+    if (pixel.x >= Resolution || pixel.y >= Resolution)
+        return;
+    float2 uv = float2(pixel.xy);
+    //float dist = distanceToSegment(uv, LastPosition, CurrentPosition);
+    float dist = length(uv - circleCenter);
+    
+    if (dist <= SmoothStep)
+    {
+        Result[pixel] = float4((id.x / Resolution) * 10, (id.y / Resolution) * 10, ((id.x + id.y) / Resolution) * 10, 1);
+    }
+}
