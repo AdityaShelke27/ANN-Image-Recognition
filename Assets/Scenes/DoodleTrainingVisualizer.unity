@@ -351,13 +351,12 @@ MonoBehaviour:
   m_LineRendererTraining: {fileID: 128475858}
   m_LineRendererTesting: {fileID: 1525312277}
   m_LineRendererLoss: {fileID: 1003998794}
-  m_TrainingImagePath: 
-  m_TrainingLabelPath: 
-  m_TestingImagePath: 
-  m_TestingLabelPath: 
+  m_TotalClassifications: 16
+  m_RootImageDirectory: /Assets/Doodle Dataset/
   m_Epochs: 5
   m_MiniBatchSize: 32
-  m_BlackWhiteThreshold: 0.7
+  m_TrainTestSplit: 0.7
+  m_DataShuffleIterations: 2000
   m_RotationRandomizer: {x: -5, y: 5}
   m_PositionRandomizer: {x: -0.05, y: 0.05}
   m_ScaleRandomizer: {x: 0.9, y: 1.1}
