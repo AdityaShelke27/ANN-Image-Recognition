@@ -41,11 +41,11 @@ public class PNGViewer : MonoBehaviour
 
         m_Image = new Texture2D(m_Resolution, m_Resolution);
 
-        //SaveImageInBinaryFromInt(m_FilePath, m_FileName);
+        SaveImageInBinary(m_RootImageDirectory, m_FileName, new Texture2D(254, 254));
         //TempFunc();
-        SetupTrainingAndTestingImages();
-        img = m_TrainingImages[0];
-        ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
+        //SetupTrainingAndTestingImages();
+        //img = m_TrainingImages[0];
+        //ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
     }
 
     // Update is called once per frame
@@ -68,11 +68,54 @@ public class PNGViewer : MonoBehaviour
         m_ImageBuffer.Dispose();
         m_Canvas.GetComponent<MeshRenderer>().material.mainTexture = m_ImageTexture;
     }
+    void TempFunc()
+    {
+        string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
+
+        float[][] m_LoadedImages = new float[3000 * imagepath.Length / 2][];
+        int count = 0;
+        bool rep = false;
+        for (int j = 0; j < imagepath.Length; j++)
+        {
+            if (Path.GetExtension(imagepath[j]) == ".meta") continue;
+
+            byte[] arr = File.ReadAllBytes(imagepath[j]);
+            using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
+            for (int k = 0; k < 3000; k++)
+            {
+                float[] image = new float[254 * 254];
+                for (int i = 0; i < 254 * 254; i++)
+                {
+                    int num = imgReader.ReadInt32();
+                    if(!rep)
+                    {
+                        Debug.Log(num);
+                    }
+                    if (num == 1)
+                    {
+                        image[i] = 1;
+                    }
+                    else
+                    {
+                        image[i] = 0;
+                    }
+                }
+                if(!rep)
+                {
+                    rep = true;
+                }
+                m_LoadedImages[count] = image;
+                count++;
+            }
+        }
+
+        m_TrainingImages = m_LoadedImages;
+    }
     void SetupTrainingAndTestingImages()
     {
         string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
 
-        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 4][];
+        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 2][];
         int count = 0;
         bool as0 = false;
         for (int j = 0; j < imagepath.Length; j++)
@@ -153,10 +196,44 @@ public class PNGViewer : MonoBehaviour
         ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
     }
 
-    void SaveImageInBinary(string[] allFileNames, string fileName, Texture2D imageTex)
+    void SaveImageInBinary(string filePath, string fileName, Texture2D imageTex)
     {
         List<byte> bytes = new List<byte>();
-        for (int j = 0; j < allFileNames.Length; j++)
+        string[] allFileNames = Directory.GetFiles(Application.dataPath + filePath);
+        for (int j = 0; j < allFileNames.Length / 2; j++)
+        {
+            string path = allFileNames[j];
+
+            if (File.Exists(path))
+            {
+                if (Path.GetExtension(path) != ".png")
+                {
+                    continue;
+                }
+                byte[] data = File.ReadAllBytes(path);
+                ImageConversion.LoadImage(imageTex, data);
+
+                Color[] cols = imageTex.GetPixels();
+                bool[] image = new bool[cols.Length];
+                for (int i = 0; i < cols.Length; i++)
+                {
+                    if (cols[i].r < 1)
+                    {
+                        image[i] = true;
+                    }
+                    else
+                    {
+                        image[i] = false;
+                    }
+                    bytes.AddRange(BitConverter.GetBytes(image[i]));
+                    //Debug.Log(cols[i]);
+                }
+            }
+        }
+        byte[] arr = bytes.ToArray();
+        File.WriteAllBytes(Application.dataPath + $"/{fileName}1", arr);
+        bytes.Clear();
+        for (int j = allFileNames.Length / 2; j < allFileNames.Length; j++)
         {
             string path = allFileNames[j];
 
@@ -187,8 +264,8 @@ public class PNGViewer : MonoBehaviour
             }
         }
 
-        byte[] arr = bytes.ToArray();
-        File.WriteAllBytes(Application.dataPath + $"/{fileName}", arr);
+        arr = bytes.ToArray();
+        File.WriteAllBytes(Application.dataPath + $"/{fileName}2", arr);
         Debug.Log("Done");
     }
     void SaveImageInBinaryFromInt(string allFileName, string fileName)
