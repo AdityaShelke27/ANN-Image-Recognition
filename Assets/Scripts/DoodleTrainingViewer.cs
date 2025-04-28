@@ -64,6 +64,7 @@ public class DoodleTrainingViewer : MonoBehaviour
 
         SetupTrainingAndTestingImages();
         ShuffleDataset();
+        Debug.Log(m_TrainingImages.Length);
         StartCoroutine(StartTraining());
     }
 
@@ -94,6 +95,8 @@ public class DoodleTrainingViewer : MonoBehaviour
                 {
                     double[] kernelImage;
                     kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
@@ -193,7 +196,7 @@ public class DoodleTrainingViewer : MonoBehaviour
         int count = 0;
         for(int j = 0; j < imagepath.Length; j++)
         {
-            if (Path.GetExtension(imagepath[j]) != ".bin") continue;
+            if (Path.GetExtension(imagepath[j]) == ".meta") continue;
 
             byte[] arr = File.ReadAllBytes(imagepath[j]);
             using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
@@ -261,7 +264,7 @@ public class DoodleTrainingViewer : MonoBehaviour
     List<double> LabelToOutputValue(int value)
     {
         List<double> output = new();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < m_TotalClassifications; i++)
         {
             if (i != value)
             {

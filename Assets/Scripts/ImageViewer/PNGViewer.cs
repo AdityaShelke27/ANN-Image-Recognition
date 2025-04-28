@@ -12,7 +12,6 @@ public class PNGViewer : MonoBehaviour
     [SerializeField] string m_FileName;
     [SerializeField, Range(0, 1)] float m_TrainTestSplit;
     [SerializeField] int m_TotalClassifications;
-    [SerializeField] float[] img;
     float[][] m_TrainingImages;
     int[] m_TrainingLabels;
     float[][] m_TestingImages;
@@ -41,11 +40,10 @@ public class PNGViewer : MonoBehaviour
 
         m_Image = new Texture2D(m_Resolution, m_Resolution);
 
-        SaveImageInBinary(m_RootImageDirectory, m_FileName, new Texture2D(254, 254));
+        //SaveImageInBinary(m_RootImageDirectory, m_FileName, new Texture2D(254, 254));
         //TempFunc();
-        //SetupTrainingAndTestingImages();
-        //img = m_TrainingImages[0];
-        //ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
+        SetupTrainingAndTestingImages();
+        ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
     }
 
     // Update is called once per frame
@@ -55,6 +53,15 @@ public class PNGViewer : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+
         m_Resolution = (int)Mathf.Sqrt(image.Length);
         m_ImageTexture = ImageProcessor.CreateTexture(m_Resolution);
         m_SetImageShader.SetTexture(0, "Result", m_ImageTexture);
@@ -114,13 +121,11 @@ public class PNGViewer : MonoBehaviour
     void SetupTrainingAndTestingImages()
     {
         string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
-
-        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 2][];
+        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 4][];
         int count = 0;
-        bool as0 = false;
         for (int j = 0; j < imagepath.Length; j++)
         {
-            if (Path.GetExtension(imagepath[j]) != ".bin") continue;
+            if (Path.GetExtension(imagepath[j]) == ".meta") continue;
 
             byte[] arr = File.ReadAllBytes(imagepath[j]);
             using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
@@ -131,18 +136,9 @@ public class PNGViewer : MonoBehaviour
                 {
                     image[i] = imgReader.ReadBoolean();
                 }
-                if(!as0)
-                {
-                    float sum = 0;
-                    for (int i = 0; i < image.Length; i++)
-                    {
-                        sum += image[i] == true ? 1 : 0;
-                    }
-                    Debug.Log("Total: " + sum);
-                    as0 = true;
-                }
                 
                 m_LoadedImages[count] = image;
+                
                 count++;
             }
         }
@@ -159,6 +155,7 @@ public class PNGViewer : MonoBehaviour
             for (int j = 0; j < 3000; j++)
             {
                 int idx = (i * 3000) + j;
+                
                 float[] convertToDouble = new float[m_LoadedImages[idx].Length];
                 for (int it = 0; it < convertToDouble.Length; it++)
                 {

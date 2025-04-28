@@ -197,11 +197,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e19c2dbe7a1724188813a04506f48a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RootImageDirectory: /Doodle Dataset/truck
+  m_RootImageDirectory: /Doodle Dataset/
   m_Resolution: 254
   m_FileName: Truck
   m_TrainTestSplit: 0.7
-  m_TotalClassifications: 2
+  m_TotalClassifications: 16
   img: []
   m_SetImageShader: {fileID: 7200000, guid: ab20646a24b0b144a8da31fee20483c6, type: 3}
   m_Canvas: {fileID: 1497924977}

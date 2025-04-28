@@ -71,7 +71,7 @@ public class ANN
 
         if (inputValues.Count != numInputs)
         {
-            Debug.Log("ERROR: Number of Inputs must be " + numInputs);
+            Debug.Log("ERROR: Number of Inputs must be " + numInputs + " but got " + inputValues.Count);
             return outputs;
         }
 
