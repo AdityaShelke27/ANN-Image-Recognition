@@ -64,7 +64,7 @@ public class DoodleTrainingViewer : MonoBehaviour
 
         SetupTrainingAndTestingImages();
         ShuffleDataset();
-        Debug.Log(m_TrainingImages.Length);
+        
         StartCoroutine(StartTraining());
     }
 
@@ -89,8 +89,7 @@ public class DoodleTrainingViewer : MonoBehaviour
 
                 image = ImageProcessor.TransformTexture(m_TrainingImages[j], Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)));
-
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
@@ -108,7 +107,7 @@ public class DoodleTrainingViewer : MonoBehaviour
                         inputs.Add(kernelImage[pxl]);
                     }
                 }
-
+                
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]));
                 lossSum += -Math.Log(predicted[(int)m_TrainingLabels[j]]);
                 batchCount++;
