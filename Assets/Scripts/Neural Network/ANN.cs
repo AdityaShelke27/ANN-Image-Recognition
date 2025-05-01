@@ -117,7 +117,7 @@ public class ANN
         return outputs;
     }
 
-    void AccumulateGradients(List<double> outputs, List<double> desiredOutputs)
+    public void AccumulateGradients(List<double> outputs, List<double> desiredOutputs)
     {
         double error;
 
@@ -148,19 +148,9 @@ public class ANN
                     double gradient = (i == numHidden) ?
                     (desiredOutputs[j] - outputs[j]) * neuron.inputs[k] :
                     neuron.errorGradient * neuron.inputs[k];
-                    /*if (i == numHidden)
-                    {
-                        error = desiredOutputs[j] - outputs[j];
-                        layers[i].neurons[j].weights[k] += alpha * (layers[i].neurons[j].inputs[k] * error + (regularizationFactor * layers[i].neurons[j].weights[k]));
-                    }
-                    else
-                    {
-                        layers[i].neurons[j].weights[k] += alpha * (layers[i].neurons[j].inputs[k] * layers[i].neurons[j].errorGradient + (regularizationFactor * layers[i].neurons[j].weights[k]));
-                    }*/
                     neuron.weightGradients[k] += gradient;
                 }
 
-                //layers[i].neurons[j].bias += alpha * (layers[i].neurons[j].errorGradient + (regularizationFactor * layers[i].neurons[j].bias));
                 neuron.biasGradient += neuron.errorGradient;
             }
         }

@@ -1,7 +1,11 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,14 +20,14 @@ public class DoodleTrainingViewer : MonoBehaviour
     ANN ann;
     int m_TrainingImagesLoaded;
     int m_TrainingLabelsLoaded;
-    double[][] m_TrainingImages;
+    byte[][] m_TrainingImages;
     int[] m_TrainingLabels;
     int m_NumberOfCorrectTraining;
     [SerializeField] LineRenderer m_LineRendererTraining;
 
     int m_TestingImagesLoaded;
     int m_TestingLabelsLoaded;
-    double[][] m_TestingImages;
+    byte[][] m_TestingImages;
     int[] m_TestingLabels;
     int m_NumberOfCorrectTesting;
     [SerializeField] LineRenderer m_LineRendererTesting;
@@ -76,59 +80,95 @@ public class DoodleTrainingViewer : MonoBehaviour
 
     IEnumerator StartTraining()
     {
+        yield return null;
+        Debug.Log(" -");
         m_TrainingImagesLoaded = m_TrainingImages.Length;
         for (int i = 0; i < m_Epochs; i++)
         {
             int batchCount = 0;
             int dataCount = 0;
             double lossSum = 0;
-            int batchLeftover = m_TrainingImagesLoaded % m_MiniBatchSize;
+            /*int batchLeftover = m_TrainingImagesLoaded % m_MiniBatchSize;
             int totalBatches = (m_TrainingImagesLoaded / m_MiniBatchSize) + (batchLeftover == 0 ? 0 : 1);
             for (int k = 0; k < totalBatches; k++)
             {
                 int iters = 0;
 
-                if(k == totalBatches - 1 && batchLeftover != 0) iters = batchLeftover;
+                if (k == totalBatches - 1 && batchLeftover != 0) iters = batchLeftover;
                 else iters = m_MiniBatchSize;
-
-                System.Threading.Tasks.Parallel.For(0, iters, (i) =>
+                ConcurrentDictionary<int, List<double>> outputArr = new(); outputArr = new();
+                try
                 {
-                    int idx = (k * m_MiniBatchSize) + i;
-                    double[] image;
-                    List<double> inputs = new();
-
-                    image = ImageProcessor.TransformTexture(m_TrainingImages[idx], Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
-                            new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                            new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
-                    for (int kels = 0; kels < m_Kernel.Length; kels++)
+                    System.Threading.Tasks.Parallel.For(0, iters, () => (0.0, 0, 0), (i, loopstate, local) =>
                     {
-                        double[] kernelImage;
-                        kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
-                        kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                        kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                        kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                        kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                        kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                        kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                        kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                        int idx = (k * m_MiniBatchSize) + i;
+                        double[] image;
+                        List<double> inputs = new();
 
-                        for (int pxl = 0; pxl < kernelImage.Length; pxl++)
+                        System.Random rnd = new System.Random(Guid.NewGuid().GetHashCode());
+                        float rotation = (float)(rnd.NextDouble() * (m_RotationRandomizer.y - m_RotationRandomizer.x) + m_RotationRandomizer.x);
+                        float scale1 = (float)(rnd.NextDouble() * (m_ScaleRandomizer.y - m_ScaleRandomizer.x) + m_ScaleRandomizer.x);
+                        float scale2 = (float)(rnd.NextDouble() * (m_ScaleRandomizer.y - m_ScaleRandomizer.x) + m_ScaleRandomizer.x);
+                        float pos1 = (float)(rnd.NextDouble() * (m_PositionRandomizer.y - m_PositionRandomizer.x) + m_PositionRandomizer.x);
+                        float pos2 = (float)(rnd.NextDouble() * (m_PositionRandomizer.y - m_PositionRandomizer.x) + m_PositionRandomizer.x);
+
+                        image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[idx]), rotation,
+                                new Vector2(scale1, scale2),
+                                new Vector2(pos1, pos2), 254);
+                        for (int kels = 0; kels < m_Kernel.Length; kels++)
                         {
-                            inputs.Add(kernelImage[pxl]);
-                        }
-                    }
-                    List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[idx]));
-                    lossSum += -Math.Log(predicted[(int)m_TrainingLabels[idx]]);
-                    batchCount++;
-                    dataCount++;
-                    //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
-                    //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
-                    if (OutputToLabelValue(predicted) == m_TrainingLabels[idx])
-                    {
-                        m_NumberOfCorrectTraining++;
-                    }
-                });
+                            double[] kernelImage;
+                            kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
+                            kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                            kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                            kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                            kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                            kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                            kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                            kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
 
+                            for (int pxl = 0; pxl < kernelImage.Length; pxl++)
+                            {
+                                inputs.Add(kernelImage[pxl]);
+                            }
+                        }
+                        //List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[idx]));
+                        List<double> predicted;
+                        lock (ann)
+                        {
+                            predicted = ann.Test(inputs);
+                        }
+                        outputArr.TryAdd(i, predicted);
+                        local.Item1 += -Math.Log(predicted[(int)m_TrainingLabels[idx]]);
+                        //batchCount++;
+                        local.Item3++;
+                        //dataCount++;
+                        //Debug.Log($"Predicted = {PrintList(predicted)}\nExpected = {PrintList(LabelToOutputValue(m_Labels[j]))}");
+                        //Debug.Log($"Predicted: {OutputToLabelValue(predicted)} Actual: {m_Labels[j]}");
+                        if (OutputToLabelValue(predicted) == m_TrainingLabels[idx])
+                        {
+                            //m_NumberOfCorrectTraining++;
+                            local.Item2++;
+                        }
+                        return local;
+                    }, final =>
+                    {
+                        Add(ref lossSum, final.Item1);
+                        Interlocked.Add(ref m_NumberOfCorrectTraining, final.Item2);
+                        Interlocked.Add(ref dataCount, final.Item3);
+                    });
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError("Parallel.For failed: " + e.ToString());
+                    throw;
+                }
+                
+                for (int o = 0; o < iters; o++)
+                {
+                    int idx = (k * m_MiniBatchSize) + o;
+                    ann.AccumulateGradients(outputArr[o], LabelToOutputValue(m_TrainingLabels[idx]));
+                }
                 ann.ApplyGradients(m_MiniBatchSize);
                 if (dataCount >= m_DataPerPoint)
                 {
@@ -143,13 +183,14 @@ public class DoodleTrainingViewer : MonoBehaviour
 
                     yield return null;
                 }
-            }
-            /*for (int j = 0; j < m_TrainingImagesLoaded; j++)
+            }*/
+            for (int j = 0; j < m_TrainingImagesLoaded; j++)
             {
+                
                 double[] image;
                 List<double> inputs = new();
 
-                image = ImageProcessor.TransformTexture(m_TrainingImages[j], Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
                         new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
@@ -198,10 +239,29 @@ public class DoodleTrainingViewer : MonoBehaviour
 
                     yield return null;
                 }
-            }*/
+            }
         }
 
         StartCoroutine(StartTesting());
+    }
+    public static double Add(ref double location1, double value)
+    {
+        double newCurrentValue = location1; // non-volatile read, so may be stale
+        while (true)
+        {
+            double currentValue = newCurrentValue;
+            double newValue = currentValue + value;
+            newCurrentValue = Interlocked.CompareExchange(ref location1, newValue, currentValue);
+            if (newCurrentValue.Equals(currentValue)) // see "Update" below
+                return newValue;
+        }
+    }
+    public static double[] ToDoubleArray(byte[] input)
+    {
+        double[] result = new double[input.Length];
+        for (int i = 0; i < input.Length; i++)
+            result[i] = input[i];
+        return result;
     }
     IEnumerator StartTesting()
     {
@@ -215,7 +275,7 @@ public class DoodleTrainingViewer : MonoBehaviour
             for (int kels = 0; kels < m_Kernel.Length; kels++)
             {
                 double[] kernelImage;
-                kernelImage = ImageProcessor.KerneledImage(m_TrainingImages[j], m_Kernel[kels]);
+                kernelImage = ImageProcessor.KerneledImage(m_TrainingImages[j].ConvertTo<double[]>(), m_Kernel[kels]);
                 kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                 kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                 kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
@@ -279,9 +339,9 @@ public class DoodleTrainingViewer : MonoBehaviour
         }
         Debug.Log("Images Loaded");
         int splitPoint = Mathf.FloorToInt(3000 * m_TrainTestSplit);
-        m_TrainingImages = new double[splitPoint * m_TotalClassifications][];
+        m_TrainingImages = new byte[splitPoint * m_TotalClassifications][];
         m_TrainingLabels = new int[splitPoint * m_TotalClassifications];
-        m_TestingImages = new double[(3000 - splitPoint) * m_TotalClassifications][];
+        m_TestingImages = new byte[(3000 - splitPoint) * m_TotalClassifications][];
         m_TestingLabels = new int[(3000 - splitPoint) * m_TotalClassifications];
         count = 0;
         int countTest = 0;
@@ -290,10 +350,10 @@ public class DoodleTrainingViewer : MonoBehaviour
             for (int j = 0; j < 3000; j++)
             {
                 int idx = (i * 3000) + j;
-                double[] convertToDouble = new double[m_LoadedImages[idx].Length];
+                byte[] convertToDouble = new byte[m_LoadedImages[idx].Length];
                 for (int it = 0; it < convertToDouble.Length; it++)
                 {
-                    convertToDouble[it] = m_LoadedImages[idx][it] ? 1 : 0;
+                    convertToDouble[it] = (byte) (m_LoadedImages[idx][it] ? 1 : 0);
                 }
                 if (j < splitPoint)
                 {
@@ -318,7 +378,7 @@ public class DoodleTrainingViewer : MonoBehaviour
             int idx1 = Random.Range(0, m_TrainingImages.Length);
             int idx2 = Random.Range(0, m_TrainingImages.Length);
 
-            double[] temp = m_TrainingImages[idx1];
+            byte[] temp = m_TrainingImages[idx1];
             m_TrainingImages[idx1] = m_TrainingImages[idx2];
             m_TrainingImages[idx2] = temp;
 
