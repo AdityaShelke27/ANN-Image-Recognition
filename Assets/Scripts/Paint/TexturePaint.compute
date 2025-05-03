@@ -39,6 +39,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     if (dist <= SmoothStep)
     {
-        Result[pixel] = float4((id.x / Resolution) * 10, (id.y / Resolution) * 10, ((id.x + id.y) / Resolution) * 10, 1);
+        Result[pixel] = float4(1, 1, 1, 1);
     }
 }

@@ -309,6 +309,52 @@ public static class ImageProcessor
 
         return outputPixels;
     }
+    public static double[] DownsampleNearest(double[] input, int originalSize, int newSize)
+    {
+        double[] output = new double[newSize * newSize];
+
+        float xRatio = (float)originalSize / newSize;
+        float yRatio = (float)originalSize / newSize;
+
+        for (int y = 0; y < newSize; y++)
+        {
+            for (int x = 0; x < newSize; x++)
+            {
+                int nearestX = (int)(x * xRatio);
+                int nearestY = (int)(y * yRatio);
+
+                int inputIndex = nearestY * originalSize + nearestX;
+                int outputIndex = y * newSize + x;
+
+                output[outputIndex] = input[inputIndex];
+            }
+        }
+
+        return output;
+    }
+    public static float[] DownsampleNearest(float[] input, int originalSize, int newSize)
+    {
+        float[] output = new float[newSize * newSize];
+
+        float xRatio = (float)originalSize / newSize;
+        float yRatio = (float)originalSize / newSize;
+
+        for (int y = 0; y < newSize; y++)
+        {
+            for (int x = 0; x < newSize; x++)
+            {
+                int nearestX = (int)(x * xRatio);
+                int nearestY = (int)(y * yRatio);
+
+                int inputIndex = nearestY * originalSize + nearestX;
+                int outputIndex = y * newSize + x;
+
+                output[outputIndex] = input[inputIndex];
+            }
+        }
+
+        return output;
+    }
     public static RenderTexture CreateTexture(int resolution)
     {
         RenderTexture rt = new RenderTexture(resolution, resolution, 0);

@@ -12,10 +12,7 @@ public class PNGViewer : MonoBehaviour
     [SerializeField] string m_FileName;
     [SerializeField, Range(0, 1)] float m_TrainTestSplit;
     [SerializeField] int m_TotalClassifications;
-    float[][] m_TrainingImages;
-    int[] m_TrainingLabels;
-    float[][] m_TestingImages;
-    int[] m_TestingLabels;
+    float[][] m_Images;
     RenderTexture m_ImageTexture;
     Texture2D m_Image;
     uint[] m_ComputeShaderThreadGroup = new uint[3];
@@ -42,8 +39,9 @@ public class PNGViewer : MonoBehaviour
 
         //SaveImageInBinary(m_RootImageDirectory, m_FileName, new Texture2D(254, 254));
         //TempFunc();
-        SetupTrainingAndTestingImages();
-        ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
+        //SetupTrainingAndTestingImages();
+        SetupTrainingImages();
+        ApplyImage(m_Images[m_CurrentImageIdx]);
     }
 
     // Update is called once per frame
@@ -53,14 +51,15 @@ public class PNGViewer : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
+        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), 126);
         image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
         image = ImageProcessor.MaxPool(image, 2);
         image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
         image = ImageProcessor.MaxPool(image, 2);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
         image = ImageProcessor.MaxPool(image, 2);
         image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
-        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.MaxPool(image, 2);*/
 
         m_Resolution = (int)Mathf.Sqrt(image.Length);
         m_ImageTexture = ImageProcessor.CreateTexture(m_Resolution);
@@ -116,7 +115,7 @@ public class PNGViewer : MonoBehaviour
             }
         }
 
-        m_TrainingImages = m_LoadedImages;
+        m_Images = m_LoadedImages;
     }
     void SetupTrainingAndTestingImages()
     {
@@ -144,12 +143,8 @@ public class PNGViewer : MonoBehaviour
         }
         Debug.Log("Images Loaded");
         int splitPoint = Mathf.FloorToInt(3000 * m_TrainTestSplit);
-        m_TrainingImages = new float[splitPoint * m_TotalClassifications][];
-        m_TrainingLabels = new int[splitPoint * m_TotalClassifications];
-        m_TestingImages = new float[(3000 - splitPoint) * m_TotalClassifications][];
-        m_TestingLabels = new int[(3000 - splitPoint) * m_TotalClassifications];
+        m_Images = new float[splitPoint * m_TotalClassifications][];
         count = 0;
-        int countTest = 0;
         for (int i = 0; i < m_TotalClassifications; i++)
         {
             for (int j = 0; j < 3000; j++)
@@ -161,36 +156,51 @@ public class PNGViewer : MonoBehaviour
                 {
                     convertToDouble[it] = m_LoadedImages[idx][it] ? 1 : 0;
                 }
-                if (j < splitPoint)
-                {
-                    m_TrainingImages[count] = convertToDouble;
-                    m_TrainingLabels[count] = i;
-                    count++;
-                }
-                else
-                {
-                    m_TestingImages[countTest] = convertToDouble;
-                    m_TestingLabels[countTest] = i;
-                    countTest++;
-                }
+                m_Images[count] = convertToDouble;
+                count++;
             }
         }
         Debug.Log("Images Splitted");
     }
+    void SetupTrainingImages()
+    {
+        string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
+
+        m_Images = new float[3000 * m_TotalClassifications][];
+        int count = 0;
+        for (int j = 0; j < imagepath.Length; j++)
+        {
+            if (Path.GetExtension(imagepath[j]) == ".meta") continue;
+
+            byte[] arr = File.ReadAllBytes(imagepath[j]);
+            using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
+            for (int k = 0; k < 1500; k++)
+            {
+                float[] image = new float[254 * 254];
+                for (int i = 0; i < 254 * 254; i++)
+                {
+                    image[i] = imgReader.ReadBoolean() ? 1 : 0;
+                }
+                m_Images[count] = image;
+                count++;
+            }
+        }
+        Debug.Log("Images Loaded");
+    }
     public void NextImage()
     {
-        m_CurrentImageIdx = (m_CurrentImageIdx + 1) % m_TrainingImages.Length;
-        ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
+        m_CurrentImageIdx = (m_CurrentImageIdx + 1) % m_Images.Length;
+        ApplyImage(m_Images[m_CurrentImageIdx]);
     }
     public void PreviousImage()
     {
         m_CurrentImageIdx--;
         if (m_CurrentImageIdx < 0)
         {
-            m_CurrentImageIdx += m_TrainingImages.Length;
+            m_CurrentImageIdx += m_Images.Length;
         }
 
-        ApplyImage(m_TrainingImages[m_CurrentImageIdx]);
+        ApplyImage(m_Images[m_CurrentImageIdx]);
     }
 
     void SaveImageInBinary(string filePath, string fileName, Texture2D imageTex)

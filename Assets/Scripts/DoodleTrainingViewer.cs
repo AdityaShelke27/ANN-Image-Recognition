@@ -193,6 +193,7 @@ public class DoodleTrainingViewer : MonoBehaviour
                 image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
                         new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
+                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
@@ -200,10 +201,10 @@ public class DoodleTrainingViewer : MonoBehaviour
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
