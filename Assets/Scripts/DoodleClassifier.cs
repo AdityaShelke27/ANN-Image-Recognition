@@ -9,10 +9,6 @@ using Random = UnityEngine.Random;
 public class DoodleClassifier : MonoBehaviour
 {
     ANN ann;
-    int m_ImagesLoaded;
-    int m_ImageHeight;
-    int m_ImageWidth;
-    int m_LabelsLoaded;
     byte[][] m_Images;
     byte[] m_Labels;
 
@@ -131,6 +127,7 @@ public class DoodleClassifier : MonoBehaviour
         double[] image;
         List<double> inputs = new();
         image = pixels.ToArray();
+        image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
         for (int kels = 0; kels < m_Kernel.Length; kels++)
         {
             double[] kerneledImage;
@@ -138,10 +135,10 @@ public class DoodleClassifier : MonoBehaviour
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
-            kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
+            /*kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
-            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
+            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);*/
 
             for (int pxl = 0; pxl < kerneledImage.Length; pxl++)
             {
@@ -193,6 +190,7 @@ public class DoodleClassifier : MonoBehaviour
                 image = ImageProcessor.TransformTexture(ToDoubleArray(m_Images[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
                         new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
+                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
@@ -200,10 +198,10 @@ public class DoodleClassifier : MonoBehaviour
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
