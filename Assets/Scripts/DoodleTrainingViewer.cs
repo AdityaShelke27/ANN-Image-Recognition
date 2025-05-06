@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
@@ -44,6 +45,7 @@ public class DoodleTrainingViewer : MonoBehaviour
     [SerializeField] Vector2 m_RotationRandomizer;
     [SerializeField] Vector2 m_PositionRandomizer;
     [SerializeField] Vector2 m_ScaleRandomizer;
+    [SerializeField] int m_TargetResolution;
     double[][] m_Kernel = new double[][] {
         new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
         new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
@@ -190,27 +192,30 @@ public class DoodleTrainingViewer : MonoBehaviour
                 double[] image;
                 List<double> inputs = new();
 
-                image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                /*image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
-                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
-                for (int kels = 0; kels < m_Kernel.Length; kels++)
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);*/
+                image = ToDoubleArray(m_TrainingImages[j]);
+                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), m_TargetResolution);
+                image = ImageProcessor.MaxPool(image, 3);
+                /*for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
                     kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
                         inputs.Add(kernelImage[pxl]);
                     }
-                }
+                }*/
+                inputs = image.ToList();
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]));
                 lossSum += -Math.Log(predicted[(int)m_TrainingLabels[j]]);
                 batchCount++;

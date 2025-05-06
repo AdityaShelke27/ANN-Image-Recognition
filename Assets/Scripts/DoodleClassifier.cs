@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -50,6 +51,8 @@ public class DoodleClassifier : MonoBehaviour
     [SerializeField] Vector2 m_PositionRandomizer;
     [SerializeField] Vector2 m_ScaleRandomizer;
     [SerializeField] int m_DataShuffleIterations;
+    [SerializeField] int m_CurrentResolution;
+    [SerializeField] int m_TargetResolution;
 
     [Header("ANN Parameters")]
     [SerializeField] int m_NoOfInputs;
@@ -64,7 +67,7 @@ public class DoodleClassifier : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        texture = new Texture2D(254, 254, TextureFormat.RGBA32, false);
+        texture = new Texture2D(m_CurrentResolution, m_CurrentResolution, TextureFormat.RGBA32, false);
         //RenderTexture.active = m_Painter.m_DrawTexture;
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
@@ -97,8 +100,8 @@ public class DoodleClassifier : MonoBehaviour
             using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
             for (int k = 0; k < 1500; k++)
             {
-                byte[] image = new byte[254 * 254];
-                for (int i = 0; i < 254 * 254; i++)
+                byte[] image = new byte[m_CurrentResolution * m_CurrentResolution];
+                for (int i = 0; i < m_CurrentResolution * m_CurrentResolution; i++)
                 {
                     image[i] = (byte) (imgReader.ReadBoolean() ? 1 : 0);
                 }
@@ -127,25 +130,27 @@ public class DoodleClassifier : MonoBehaviour
         double[] image;
         List<double> inputs = new();
         image = pixels.ToArray();
-        image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
-        for (int kels = 0; kels < m_Kernel.Length; kels++)
+        image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
+        image = ImageProcessor.MaxPool(image, 3);
+        //image = ImageProcessor.MaxPool(image, 2);
+        /*for (int kels = 0; kels < m_Kernel.Length; kels++)
         {
             double[] kerneledImage;
             kerneledImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
-            /*kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
+            kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
-            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);*/
+            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
 
             for (int pxl = 0; pxl < kerneledImage.Length; pxl++)
             {
                 inputs.Add(kerneledImage[pxl]);
             }
-        }
-        Debug.Log(inputs.Count);
+        }*/
+        inputs = image.ToList();
         List<double> predicted = ann.Test(inputs);
 
         m_Text.text = m_IndexToLabel[OutputToLabelValue(predicted)];
@@ -189,25 +194,28 @@ public class DoodleClassifier : MonoBehaviour
 
                 image = ImageProcessor.TransformTexture(ToDoubleArray(m_Images[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
-                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), 126);
-                for (int kels = 0; kels < m_Kernel.Length; kels++)
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), m_CurrentResolution);
+                image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
+                image = ImageProcessor.MaxPool(image, 3);
+                //image = ImageProcessor.MaxPool(image, 2);
+                /*for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
                     kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
                         inputs.Add(kernelImage[pxl]);
                     }
-                }
+                }*/
+                inputs = image.ToList();
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 batchCount++;
                 if (batchCount >= m_MiniBatchSize)

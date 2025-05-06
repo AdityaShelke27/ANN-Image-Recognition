@@ -12,6 +12,7 @@ public class PNGViewer : MonoBehaviour
     [SerializeField] string m_FileName;
     [SerializeField, Range(0, 1)] float m_TrainTestSplit;
     [SerializeField] int m_TotalClassifications;
+    [SerializeField] int m_TargetResolution;
     float[][] m_Images;
     RenderTexture m_ImageTexture;
     Texture2D m_Image;
@@ -51,12 +52,14 @@ public class PNGViewer : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
-        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), 126);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
-        image = ImageProcessor.MaxPool(image, 2);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
-        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), m_TargetResolution);
+        image = ImageProcessor.MaxPool(image, 3);
+        //image = ImageProcessor.MaxPool(image, 2);
         /*image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
         image = ImageProcessor.MaxPool(image, 2);
         image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
         image = ImageProcessor.MaxPool(image, 2);*/

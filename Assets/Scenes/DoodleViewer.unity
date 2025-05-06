@@ -202,6 +202,7 @@ MonoBehaviour:
   m_FileName: Truck
   m_TrainTestSplit: 0.7
   m_TotalClassifications: 16
+  m_TargetResolution: 81
   m_SetImageShader: {fileID: 7200000, guid: ab20646a24b0b144a8da31fee20483c6, type: 3}
   m_Canvas: {fileID: 1497924977}
 --- !u!1 &519420028
