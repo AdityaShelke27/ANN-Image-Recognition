@@ -353,8 +353,8 @@ MonoBehaviour:
   m_ScaleRandomizer: {x: 0.9, y: 1.1}
   m_DataShuffleIterations: 10000
   m_CurrentResolution: 254
-  m_TargetResolution: 80
-  m_NoOfInputs: 729
+  m_TargetResolution: 81
+  m_NoOfInputs: 784
   m_NoOfOutputs: 16
   m_NoOfHiddenLayers: 1
   m_NoOfNeuronsPerHiddenLayers: 200

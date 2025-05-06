@@ -90,7 +90,7 @@ public static class ImageProcessor
 
         return newImage;
     }
-    public static double[] KerneledImage(double[] image, double[] kernel)
+    /*public static double[] KerneledImage(double[] image, double[] kernel)
     {
         int imageLength = (int)Mathf.Sqrt(image.Length);
         int kernelLength = (int)Mathf.Sqrt(kernel.Length);
@@ -139,8 +139,42 @@ public static class ImageProcessor
         }
 
         return newImage;
+    }*/
+    public static double[] KerneledImage(double[] image, double[] kernel)
+    {
+        int imageSize = (int)Math.Sqrt(image.Length);
+        int kernelSize = (int)Math.Sqrt(kernel.Length);
+        int outputSize = imageSize - kernelSize + 1;
+
+        double[] result = new double[outputSize * outputSize];
+
+        for (int i = 0; i < outputSize; i++)
+        {
+            for (int j = 0; j < outputSize; j++)
+            {
+                double sum = 0;
+
+                for (int ki = 0; ki < kernelSize; ki++)
+                {
+                    int imageRow = (i + ki) * imageSize;
+
+                    for (int kj = 0; kj < kernelSize; kj++)
+                    {
+                        int imageIdx = imageRow + (j + kj);
+                        int kernelIdx = ki * kernelSize + kj;
+
+                        sum += image[imageIdx] * kernel[kernelIdx];
+                    }
+                }
+
+                result[i * outputSize + j] = sum;
+            }
+        }
+
+        return result;
     }
-    public static double[] MaxPool(double[] image, int poolSize)
+
+    /*public static double[] MaxPool(double[] image, int poolSize)
     {
         int imageLength = (int)Mathf.Sqrt(image.Length);
         double[][] image2d = new double[imageLength][];
@@ -178,7 +212,41 @@ public static class ImageProcessor
         }
 
         return poolImage.ToArray();
+    }*/
+    public static double[] MaxPool(double[] image, int poolSize)
+    {
+        int imageSize = (int)Math.Sqrt(image.Length);
+        int outputSize = imageSize / poolSize;
+
+        double[] result = new double[outputSize * outputSize];
+
+        for (int i = 0; i < outputSize; i++)
+        {
+            for (int j = 0; j < outputSize; j++)
+            {
+                double maxVal = double.MinValue;
+
+                for (int ki = 0; ki < poolSize; ki++)
+                {
+                    int rowStart = (i * poolSize + ki) * imageSize;
+
+                    for (int kj = 0; kj < poolSize; kj++)
+                    {
+                        int idx = rowStart + (j * poolSize + kj);
+                        if (idx < image.Length && image[idx] > maxVal)
+                        {
+                            maxVal = image[idx];
+                        }
+                    }
+                }
+
+                result[i * outputSize + j] = maxVal;
+            }
+        }
+
+        return result;
     }
+
     public static float[] MaxPool(float[] image, int poolSize)
     {
         int imageLength = (int)Mathf.Sqrt(image.Length);

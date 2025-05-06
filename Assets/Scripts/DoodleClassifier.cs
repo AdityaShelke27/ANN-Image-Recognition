@@ -130,10 +130,10 @@ public class DoodleClassifier : MonoBehaviour
         double[] image;
         List<double> inputs = new();
         image = pixels.ToArray();
-        image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
-        image = ImageProcessor.MaxPool(image, 3);
+        //image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
+        //image = ImageProcessor.MaxPool(image, 3);
         //image = ImageProcessor.MaxPool(image, 2);
-        /*for (int kels = 0; kels < m_Kernel.Length; kels++)
+        for (int kels = 0; kels < m_Kernel.Length; kels++)
         {
             double[] kerneledImage;
             kerneledImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
@@ -149,8 +149,8 @@ public class DoodleClassifier : MonoBehaviour
             {
                 inputs.Add(kerneledImage[pxl]);
             }
-        }*/
-        inputs = image.ToList();
+        }
+        //inputs = image.ToList();
         List<double> predicted = ann.Test(inputs);
 
         m_Text.text = m_IndexToLabel[OutputToLabelValue(predicted)];
@@ -159,7 +159,7 @@ public class DoodleClassifier : MonoBehaviour
     }
     void ShuffleDataset()
     {
-        for (int i = 0; i < m_DataShuffleIterations; i++)
+        /*for (int i = 0; i < m_DataShuffleIterations; i++)
         {
             int idx1 = Random.Range(0, m_Images.Length);
             int idx2 = Random.Range(0, m_Images.Length);
@@ -171,6 +171,14 @@ public class DoodleClassifier : MonoBehaviour
             byte tempL = m_Labels[idx1];
             m_Labels[idx1] = m_Labels[idx2];
             m_Labels[idx2] = tempL;
+        }*/
+        System.Random rng = new System.Random();
+        int n = m_Images.Length;
+        while (n > 1)
+        {
+            int k = rng.Next(n--);
+            (m_Images[k], m_Images[n]) = (m_Images[n], m_Images[k]);
+            (m_Labels[k], m_Labels[n]) = (m_Labels[n], m_Labels[k]);
         }
     }
     public static double[] ToDoubleArray(byte[] input)
@@ -195,10 +203,9 @@ public class DoodleClassifier : MonoBehaviour
                 image = ImageProcessor.TransformTexture(ToDoubleArray(m_Images[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
                         new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), m_CurrentResolution);
-                image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
-                image = ImageProcessor.MaxPool(image, 3);
-                //image = ImageProcessor.MaxPool(image, 2);
-                /*for (int kels = 0; kels < m_Kernel.Length; kels++)
+                //image = ImageProcessor.DownsampleNearest(image, m_CurrentResolution, m_TargetResolution);
+                //image = ImageProcessor.MaxPool(image, 3);
+                for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
                     kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
@@ -214,8 +221,8 @@ public class DoodleClassifier : MonoBehaviour
                     {
                         inputs.Add(kernelImage[pxl]);
                     }
-                }*/
-                inputs = image.ToList();
+                }
+                //inputs = image.ToList();
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
                 batchCount++;
                 if (batchCount >= m_MiniBatchSize)
