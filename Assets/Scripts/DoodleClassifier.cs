@@ -50,7 +50,6 @@ public class DoodleClassifier : MonoBehaviour
     [SerializeField] Vector2 m_RotationRandomizer;
     [SerializeField] Vector2 m_PositionRandomizer;
     [SerializeField] Vector2 m_ScaleRandomizer;
-    [SerializeField] int m_DataShuffleIterations;
     [SerializeField] int m_CurrentResolution;
     [SerializeField] int m_TargetResolution;
 

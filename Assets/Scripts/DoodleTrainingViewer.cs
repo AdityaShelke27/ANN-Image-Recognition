@@ -41,7 +41,6 @@ public class DoodleTrainingViewer : MonoBehaviour
     [SerializeField] int m_Epochs;
     [SerializeField] int m_MiniBatchSize;
     [SerializeField, Range(0, 1)] float m_TrainTestSplit;
-    [SerializeField] int m_DataShuffleIterations;
     [SerializeField] Vector2 m_RotationRandomizer;
     [SerializeField] Vector2 m_PositionRandomizer;
     [SerializeField] Vector2 m_ScaleRandomizer;
@@ -192,13 +191,11 @@ public class DoodleTrainingViewer : MonoBehaviour
                 double[] image;
                 List<double> inputs = new();
 
-                /*image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);*/
-                image = ToDoubleArray(m_TrainingImages[j]);
-                image = ImageProcessor.DownsampleNearest(image, (int)Mathf.Sqrt(image.Length), m_TargetResolution);
-                image = ImageProcessor.MaxPool(image, 3);
-                /*for (int kels = 0; kels < m_Kernel.Length; kels++)
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);
+                
+                for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
                     double[] kernelImage;
                     kernelImage = ImageProcessor.KerneledImage(image, m_Kernel[kels]);
@@ -214,8 +211,8 @@ public class DoodleTrainingViewer : MonoBehaviour
                     {
                         inputs.Add(kernelImage[pxl]);
                     }
-                }*/
-                inputs = image.ToList();
+                }
+                //inputs = image.ToList();
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_TrainingLabels[j]));
                 lossSum += -Math.Log(predicted[(int)m_TrainingLabels[j]]);
                 batchCount++;
@@ -379,18 +376,26 @@ public class DoodleTrainingViewer : MonoBehaviour
     }
     void ShuffleDataset()
     {
-        for (int i = 0; i < m_DataShuffleIterations; i++)
+        /*for (int i = 0; i < m_DataShuffleIterations; i++)
         {
-            int idx1 = Random.Range(0, m_TrainingImages.Length);
-            int idx2 = Random.Range(0, m_TrainingImages.Length);
+            int idx1 = Random.Range(0, m_Images.Length);
+            int idx2 = Random.Range(0, m_Images.Length);
 
-            byte[] temp = m_TrainingImages[idx1];
-            m_TrainingImages[idx1] = m_TrainingImages[idx2];
-            m_TrainingImages[idx2] = temp;
+            byte[] temp = m_Images[idx1];
+            m_Images[idx1] = m_Images[idx2];
+            m_Images[idx2] = temp;
 
-            int tempL = m_TrainingLabels[idx1];
-            m_TrainingLabels[idx1] = m_TrainingLabels[idx2];
-            m_TrainingLabels[idx2] = tempL;
+            byte tempL = m_Labels[idx1];
+            m_Labels[idx1] = m_Labels[idx2];
+            m_Labels[idx2] = tempL;
+        }*/
+        System.Random rng = new System.Random();
+        int n = m_TrainingImages.Length;
+        while (n > 1)
+        {
+            int k = rng.Next(n--);
+            (m_TrainingImages[k], m_TrainingImages[n]) = (m_TrainingImages[n], m_TrainingImages[k]);
+            (m_TrainingLabels[k], m_TrainingLabels[n]) = (m_TrainingLabels[n], m_TrainingLabels[k]);
         }
     }
     List<double> LabelToOutputValue(int value)
