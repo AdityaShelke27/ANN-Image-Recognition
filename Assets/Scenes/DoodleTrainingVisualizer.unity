@@ -351,7 +351,7 @@ MonoBehaviour:
   m_LineRendererTraining: {fileID: 128475858}
   m_LineRendererTesting: {fileID: 1525312277}
   m_LineRendererLoss: {fileID: 1003998794}
-  m_TotalClassifications: 16
+  m_TotalClassifications: 14
   m_RootImageDirectory: /Doodle Dataset/
   m_Epochs: 5
   m_MiniBatchSize: 32
@@ -361,7 +361,7 @@ MonoBehaviour:
   m_ScaleRandomizer: {x: 0.9, y: 1.1}
   m_TargetResolution: 80
   m_NoOfInputs: 784
-  m_NoOfOutputs: 16
+  m_NoOfOutputs: 14
   m_NoOfHiddenLayers: 1
   m_NoOfNeuronsPerHiddenLayers: 400
   m_LearningRate: 0.001

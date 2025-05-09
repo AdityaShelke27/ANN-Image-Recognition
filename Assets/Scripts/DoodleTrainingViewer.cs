@@ -321,7 +321,7 @@ public class DoodleTrainingViewer : MonoBehaviour
     {
         string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
 
-        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 4][];
+        bool[][] m_LoadedImages = new bool[3000 * m_TotalClassifications][];
         int count = 0;
         for (int j = 0; j < imagepath.Length; j++)
         {

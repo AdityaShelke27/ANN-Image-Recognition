@@ -346,19 +346,18 @@ MonoBehaviour:
   m_Painter: {fileID: 1192906114}
   m_Text: {fileID: 113424478}
   m_TrainingImagePath: /Doodle Dataset/
-  m_Epochs: 1
+  m_Epochs: 3
   m_MiniBatchSize: 32
   m_RotationRandomizer: {x: -5, y: 5}
   m_PositionRandomizer: {x: -0.05, y: 0.05}
   m_ScaleRandomizer: {x: 0.9, y: 1.1}
-  m_DataShuffleIterations: 10000
   m_CurrentResolution: 254
   m_TargetResolution: 81
   m_NoOfInputs: 784
-  m_NoOfOutputs: 16
+  m_NoOfOutputs: 14
   m_NoOfHiddenLayers: 1
-  m_NoOfNeuronsPerHiddenLayers: 200
-  m_TotalClassifications: 16
+  m_NoOfNeuronsPerHiddenLayers: 400
+  m_TotalClassifications: 14
   m_LearningRate: 0.001
   m_RegularizationFactor: 0.0001
   m_HiddenActivation: 3

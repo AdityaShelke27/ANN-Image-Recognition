@@ -24,12 +24,12 @@ public class DoodleClassifier : MonoBehaviour
         { 7, "Hammer"},
         { 8, "Hourglass"},
         { 9, "Lighthouse"},
-        { 10, "Popsicle"},
-        { 11, "Saw"},
-        { 12, "Smiley Face"},
-        { 13, "Sun"},
-        { 14, "Sword"},
-        { 15, "Truck"},
+        //{ 10, "Popsicle"},
+        { 10, "Saw"},
+        { 11, "Smiley Face"},
+        //{ 13, "Sun"},
+        { 12, "Sword"},
+        { 13, "Truck"},
     };
 
     double[][] m_ImageValues;
