@@ -42,6 +42,7 @@ public class DoodleClassifier : MonoBehaviour
     };
     [SerializeField] Painter m_Painter;
     [SerializeField] TMP_Text m_Text;
+    [SerializeField] bool m_IsUsingSavedWeights = false;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -70,10 +71,18 @@ public class DoodleClassifier : MonoBehaviour
         //RenderTexture.active = m_Painter.m_DrawTexture;
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
-        SetupTrainingImages();
-        ShuffleDataset();
-        StartTraining();
 
+        if(!m_IsUsingSavedWeights)
+        {
+            SetupTrainingImages();
+            ShuffleDataset();
+            StartTraining();
+        }
+        else
+        {
+            LoadWeights();
+        }
+        
         StartCoroutine(PredictCanvas());
         Debug.Log("Done");
     }
@@ -242,6 +251,17 @@ public class DoodleClassifier : MonoBehaviour
         str += "}";
 
         return str;
+    }
+    public void SaveWeights()
+    {
+        string weights = ann.PrintWeights();
+        File.WriteAllText(Application.dataPath + "/Weights.txt", weights);
+        Debug.Log(File.ReadAllText(Application.dataPath + "/Weights.txt"));
+    }
+    void LoadWeights()
+    {
+        string weights = File.ReadAllText(Application.dataPath + "/Weights.txt");
+        ann.LoadWeights(weights);
     }
     List<byte> LabelToOutputValue(byte value)
     {
