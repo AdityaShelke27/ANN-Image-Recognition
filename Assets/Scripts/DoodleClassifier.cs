@@ -40,9 +40,12 @@ public class DoodleClassifier : MonoBehaviour
         new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
         new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
+    TMP_Text[] m_PredictedTexts;
     [SerializeField] Painter m_Painter;
     [SerializeField] TMP_Text m_Text;
     [SerializeField] bool m_IsUsingSavedWeights = false;
+    [SerializeField] GameObject m_PredictedTextPrefab;
+    [SerializeField] Transform m_PredictedParent;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -71,6 +74,13 @@ public class DoodleClassifier : MonoBehaviour
         //RenderTexture.active = m_Painter.m_DrawTexture;
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
+
+        m_PredictedTexts = new TMP_Text[m_NoOfOutputs];
+        for (int i = 0; i < m_NoOfOutputs; i++)
+        {
+            GameObject tex = Instantiate(m_PredictedTextPrefab, m_PredictedParent);
+            m_PredictedTexts[i] = tex.GetComponent<TMP_Text>();
+        }
 
         if(!m_IsUsingSavedWeights)
         {
@@ -161,25 +171,25 @@ public class DoodleClassifier : MonoBehaviour
         //inputs = image.ToList();
         List<double> predicted = ann.Test(inputs);
 
+        int[] arr = new int[predicted.Count];
+        for (int l = 0; l < arr.Length; l++)
+        {
+            arr[l] = l;
+        }
+
+        Array.Sort(predicted.ToArray(), arr);
+
+        for (int l = m_TotalClassifications - 1; l >= 0; l--)
+        {
+            m_PredictedTexts[m_TotalClassifications - l - 1].text = m_IndexToLabel[arr[l]];
+        }
+
         m_Text.text = m_IndexToLabel[OutputToLabelValue(predicted)];
         //Debug.Log(OutputToLabelValue(predicted));
         StartCoroutine(PredictCanvas());
     }
     void ShuffleDataset()
     {
-        /*for (int i = 0; i < m_DataShuffleIterations; i++)
-        {
-            int idx1 = Random.Range(0, m_Images.Length);
-            int idx2 = Random.Range(0, m_Images.Length);
-
-            byte[] temp = m_Images[idx1];
-            m_Images[idx1] = m_Images[idx2];
-            m_Images[idx2] = temp;
-
-            byte tempL = m_Labels[idx1];
-            m_Labels[idx1] = m_Labels[idx2];
-            m_Labels[idx2] = tempL;
-        }*/
         System.Random rng = new System.Random();
         int n = m_Images.Length;
         while (n > 1)
@@ -232,6 +242,7 @@ public class DoodleClassifier : MonoBehaviour
                 }
                 //inputs = image.ToList();
                 List<double> predicted = ann.Train(inputs, LabelToOutputValue(m_Labels[j]).ConvertAll(x => (double)x));
+                
                 batchCount++;
                 if (batchCount >= m_MiniBatchSize)
                 {
