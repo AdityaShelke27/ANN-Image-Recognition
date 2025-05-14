@@ -481,11 +481,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Painter: {fileID: 1192906114}
   m_Text: {fileID: 113424478}
-  m_IsUsingSavedWeights: 1
+  m_IsUsingSavedWeights: 0
   m_PredictedTextPrefab: {fileID: 4304402891395685611, guid: 53642b789873cad4c80551edfd8c824e, type: 3}
   m_PredictedParent: {fileID: 1382175580}
   m_TrainingImagePath: /Doodle Dataset/
-  m_Epochs: 3
+  m_Epochs: 4
   m_MiniBatchSize: 32
   m_RotationRandomizer: {x: -5, y: 5}
   m_PositionRandomizer: {x: -0.05, y: 0.05}
