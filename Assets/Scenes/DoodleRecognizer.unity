@@ -482,7 +482,7 @@ MonoBehaviour:
   m_Painter: {fileID: 1192906114}
   m_Text: {fileID: 113424478}
   m_IsUsingSavedWeights: 0
-  m_PredictedTextPrefab: {fileID: 4304402891395685611, guid: 53642b789873cad4c80551edfd8c824e, type: 3}
+  m_PredictedTextPrefab: {fileID: 1423298353257845518, guid: 26bd604ddcf5cda4d8ed23b338083c61, type: 3}
   m_PredictedParent: {fileID: 1382175580}
   m_TrainingImagePath: /Doodle Dataset/
   m_Epochs: 4
@@ -494,8 +494,8 @@ MonoBehaviour:
   m_TargetResolution: 81
   m_NoOfInputs: 784
   m_NoOfOutputs: 14
-  m_NoOfHiddenLayers: 1
-  m_NoOfNeuronsPerHiddenLayers: 400
+  m_NoOfHiddenLayers: 2
+  m_NoOfNeuronsPerHiddenLayers: 200
   m_TotalClassifications: 14
   m_LearningRate: 0.001
   m_RegularizationFactor: 0.0001
@@ -780,7 +780,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -234, y: -148.69}
+  m_AnchoredPosition: {x: -499, y: -136}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1382175581

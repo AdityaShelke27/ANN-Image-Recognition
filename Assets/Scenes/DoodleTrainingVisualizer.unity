@@ -362,8 +362,8 @@ MonoBehaviour:
   m_TargetResolution: 80
   m_NoOfInputs: 784
   m_NoOfOutputs: 14
-  m_NoOfHiddenLayers: 1
-  m_NoOfNeuronsPerHiddenLayers: 400
+  m_NoOfHiddenLayers: 2
+  m_NoOfNeuronsPerHiddenLayers: 200
   m_LearningRate: 0.001
   m_RegularizationFactor: 0.0001
   m_HiddenActivation: 3

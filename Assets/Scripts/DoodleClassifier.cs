@@ -40,7 +40,8 @@ public class DoodleClassifier : MonoBehaviour
         new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
         new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
-    TMP_Text[] m_PredictedTexts;
+    TMP_Text[] m_PredictedLabels;
+    TMP_Text[] m_PredictedValues;
     [SerializeField] Painter m_Painter;
     [SerializeField] TMP_Text m_Text;
     [SerializeField] bool m_IsUsingSavedWeights = false;
@@ -75,11 +76,13 @@ public class DoodleClassifier : MonoBehaviour
         ann = new ANN(m_NoOfInputs, m_NoOfOutputs, m_NoOfHiddenLayers, m_NoOfNeuronsPerHiddenLayers,
             m_LearningRate, m_HiddenActivation, m_OutputActivation, m_RegularizationFactor, m_MiniBatchSize);
 
-        m_PredictedTexts = new TMP_Text[m_NoOfOutputs];
+        m_PredictedLabels = new TMP_Text[m_NoOfOutputs];
+        m_PredictedValues = new TMP_Text[m_NoOfOutputs];
         for (int i = 0; i < m_NoOfOutputs; i++)
         {
             GameObject tex = Instantiate(m_PredictedTextPrefab, m_PredictedParent);
-            m_PredictedTexts[i] = tex.GetComponent<TMP_Text>();
+            m_PredictedLabels[i] = tex.transform.GetChild(0).GetComponent<TMP_Text>();
+            m_PredictedValues[i] = tex.transform.GetChild(1).GetComponent<TMP_Text>();
         }
 
         if(!m_IsUsingSavedWeights)
@@ -176,12 +179,13 @@ public class DoodleClassifier : MonoBehaviour
         {
             arr[l] = l;
         }
-
-        Array.Sort(predicted.ToArray(), arr);
+        double[] predictedArr = predicted.ToArray();
+        Array.Sort(predictedArr, arr);
 
         for (int l = m_TotalClassifications - 1; l >= 0; l--)
         {
-            m_PredictedTexts[m_TotalClassifications - l - 1].text = m_IndexToLabel[arr[l]];
+            m_PredictedLabels[m_TotalClassifications - l - 1].text = m_IndexToLabel[arr[l]];
+            m_PredictedValues[m_TotalClassifications - l - 1].text = (predictedArr[l] * 100).ToString("0.00") + "%";
         }
 
         m_Text.text = m_IndexToLabel[OutputToLabelValue(predicted)];
