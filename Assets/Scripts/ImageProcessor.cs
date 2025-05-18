@@ -377,8 +377,9 @@ public static class ImageProcessor
 
         return outputPixels;
     }
-    public static double[] DownsampleNearest(double[] input, int originalSize, int newSize)
+    public static double[] DownsampleNearest(double[] input, int newSize)
     {
+        int originalSize = (int)Mathf.Sqrt(input.Length);
         double[] output = new double[newSize * newSize];
 
         float xRatio = (float)originalSize / newSize;

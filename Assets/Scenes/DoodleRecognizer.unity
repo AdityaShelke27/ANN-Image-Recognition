@@ -485,7 +485,7 @@ MonoBehaviour:
   m_PredictedTextPrefab: {fileID: 1423298353257845518, guid: 26bd604ddcf5cda4d8ed23b338083c61, type: 3}
   m_PredictedParent: {fileID: 1382175580}
   m_TrainingImagePath: /Doodle Dataset/
-  m_Epochs: 4
+  m_Epochs: 5
   m_MiniBatchSize: 32
   m_RotationRandomizer: {x: -5, y: 5}
   m_PositionRandomizer: {x: -0.05, y: 0.05}
@@ -495,7 +495,7 @@ MonoBehaviour:
   m_NoOfInputs: 784
   m_NoOfOutputs: 14
   m_NoOfHiddenLayers: 2
-  m_NoOfNeuronsPerHiddenLayers: 200
+  m_NoOfNeuronsPerHiddenLayers: 300
   m_TotalClassifications: 14
   m_LearningRate: 0.001
   m_RegularizationFactor: 0.0001

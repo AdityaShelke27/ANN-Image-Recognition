@@ -10,9 +10,9 @@ public class PNGViewer : MonoBehaviour
     [SerializeField] string m_RootImageDirectory;
     [SerializeField] int m_Resolution;
     [SerializeField] string m_FileName;
-    [SerializeField, Range(0, 1)] float m_TrainTestSplit;
     [SerializeField] int m_TotalClassifications;
     [SerializeField] int m_TargetResolution;
+    [SerializeField] int m_KernelIdx;
     float[][] m_Images;
     RenderTexture m_ImageTexture;
     Texture2D m_Image;
@@ -52,17 +52,16 @@ public class PNGViewer : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
-        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), m_TargetResolution);
-        image = ImageProcessor.MaxPool(image, 3);
-        //image = ImageProcessor.MaxPool(image, 2);
-        /*image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);
-        image = ImageProcessor.KerneledImage(image, m_Kernel[0]);
+        image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);*/
+        
+        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), m_TargetResolution);
 
         m_Resolution = (int)Mathf.Sqrt(image.Length);
         m_ImageTexture = ImageProcessor.CreateTexture(m_Resolution);
@@ -120,51 +119,7 @@ public class PNGViewer : MonoBehaviour
 
         m_Images = m_LoadedImages;
     }
-    void SetupTrainingAndTestingImages()
-    {
-        string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);
-        bool[][] m_LoadedImages = new bool[3000 * imagepath.Length / 4][];
-        int count = 0;
-        for (int j = 0; j < imagepath.Length; j++)
-        {
-            if (Path.GetExtension(imagepath[j]) == ".meta") continue;
-
-            byte[] arr = File.ReadAllBytes(imagepath[j]);
-            using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
-            for (int k = 0; k < 1500; k++)
-            {
-                bool[] image = new bool[254 * 254];
-                for (int i = 0; i < 254 * 254; i++)
-                {
-                    image[i] = imgReader.ReadBoolean();
-                }
-                
-                m_LoadedImages[count] = image;
-                
-                count++;
-            }
-        }
-        Debug.Log("Images Loaded");
-        int splitPoint = Mathf.FloorToInt(3000 * m_TrainTestSplit);
-        m_Images = new float[splitPoint * m_TotalClassifications][];
-        count = 0;
-        for (int i = 0; i < m_TotalClassifications; i++)
-        {
-            for (int j = 0; j < 3000; j++)
-            {
-                int idx = (i * 3000) + j;
-                
-                float[] convertToDouble = new float[m_LoadedImages[idx].Length];
-                for (int it = 0; it < convertToDouble.Length; it++)
-                {
-                    convertToDouble[it] = m_LoadedImages[idx][it] ? 1 : 0;
-                }
-                m_Images[count] = convertToDouble;
-                count++;
-            }
-        }
-        Debug.Log("Images Splitted");
-    }
+    
     void SetupTrainingImages()
     {
         string[] imagepath = Directory.GetFiles(Application.dataPath + m_RootImageDirectory);

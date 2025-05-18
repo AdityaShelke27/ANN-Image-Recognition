@@ -32,7 +32,7 @@ public class DoodleTrainingViewer : MonoBehaviour
     int[] m_TestingLabels;
     int m_NumberOfCorrectTesting;
     [SerializeField] LineRenderer m_LineRendererTesting;
-
+    [SerializeField] int m_ImageOriginalSize;
     [SerializeField] LineRenderer m_LineRendererLoss;
     [SerializeField] int m_TotalClassifications;
 
@@ -47,9 +47,9 @@ public class DoodleTrainingViewer : MonoBehaviour
     [SerializeField] int m_TargetResolution;
     double[][] m_Kernel = new double[][] {
         new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
-        new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
+        //new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
         new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
-        new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+        //new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
 
     [Header("ANN Parameters")]
@@ -191,9 +191,9 @@ public class DoodleTrainingViewer : MonoBehaviour
                 double[] image;
                 List<double> inputs = new();
                 image = ToDoubleArray(m_TrainingImages[j]);
-                /*image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                image = ImageProcessor.TransformTexture(ToDoubleArray(m_TrainingImages[j]), Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
                         new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
-                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), 254);*/
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), m_ImageOriginalSize);
 
                 for (int kels = 0; kels < m_Kernel.Length; kels++)
                 {
@@ -202,10 +202,12 @@ public class DoodleTrainingViewer : MonoBehaviour
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
+
+                    kernelImage = ImageProcessor.DownsampleNearest(kernelImage, m_TargetResolution);
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {
@@ -331,8 +333,8 @@ public class DoodleTrainingViewer : MonoBehaviour
             using BinaryReader imgReader = new BinaryReader(new MemoryStream(arr));
             for (int k = 0; k < 1500; k++)
             {
-                bool[] image = new bool[254 * 254];
-                for (int i = 0; i < 254 * 254; i++)
+                bool[] image = new bool[m_ImageOriginalSize * m_ImageOriginalSize];
+                for (int i = 0; i < m_ImageOriginalSize * m_ImageOriginalSize; i++)
                 {
                     image[i] = imgReader.ReadBoolean();
                 }
