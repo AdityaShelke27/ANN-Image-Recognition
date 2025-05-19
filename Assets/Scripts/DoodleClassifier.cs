@@ -36,9 +36,9 @@ public class DoodleClassifier : MonoBehaviour
     Texture2D texture;
     double[][] m_Kernel = new double[][] {
         new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
-        new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
+        //new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
         new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
-        new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+        //new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
     TMP_Text[] m_PredictedLabels;
     TMP_Text[] m_PredictedValues;
@@ -161,10 +161,12 @@ public class DoodleClassifier : MonoBehaviour
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
-            kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
+            /*kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
             kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
             kerneledImage = ImageProcessor.KerneledImage(kerneledImage, m_Kernel[kels]);
-            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);
+            kerneledImage = ImageProcessor.MaxPool(kerneledImage, 2);*/
+
+            kerneledImage = ImageProcessor.DownsampleNearest(kerneledImage, m_TargetResolution);
 
             for (int pxl = 0; pxl < kerneledImage.Length; pxl++)
             {
@@ -233,10 +235,12 @@ public class DoodleClassifier : MonoBehaviour
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
+
+                    kernelImage = ImageProcessor.DownsampleNearest(kernelImage, m_TargetResolution);
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {

@@ -491,11 +491,11 @@ MonoBehaviour:
   m_PositionRandomizer: {x: -0.05, y: 0.05}
   m_ScaleRandomizer: {x: 0.9, y: 1.1}
   m_CurrentResolution: 254
-  m_TargetResolution: 81
-  m_NoOfInputs: 784
+  m_TargetResolution: 28
+  m_NoOfInputs: 1568
   m_NoOfOutputs: 14
   m_NoOfHiddenLayers: 2
-  m_NoOfNeuronsPerHiddenLayers: 300
+  m_NoOfNeuronsPerHiddenLayers: 200
   m_TotalClassifications: 14
   m_LearningRate: 0.001
   m_RegularizationFactor: 0.0001
