@@ -47,9 +47,9 @@ public class DoodleTrainingViewer : MonoBehaviour
     [SerializeField] int m_TargetResolution;
     double[][] m_Kernel = new double[][] {
         new double[] { 1, 2, 1, 0, 0, 0, -1, -2, -1 },
-        //new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
+        new double[] { -1, -2, -1, 0, 0, 0, 1, 2, 1 },
         new double[] { 1, 0, -1, 2, 0, -2, 1, 0, -1 },
-        //new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
+        new double[] { -1, 0, 1, -2, 0, 2, -1, 0, 1 },
     };
 
     [Header("ANN Parameters")]
@@ -202,12 +202,12 @@ public class DoodleTrainingViewer : MonoBehaviour
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
-                    /*kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
+                    kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
                     kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
                     kernelImage = ImageProcessor.KerneledImage(kernelImage, m_Kernel[kels]);
-                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);*/
+                    kernelImage = ImageProcessor.MaxPool(kernelImage, 2);
 
-                    kernelImage = ImageProcessor.DownsampleNearest(kernelImage, m_TargetResolution);
+                    //kernelImage = ImageProcessor.DownsampleNearest(kernelImage, m_TargetResolution);
 
                     for (int pxl = 0; pxl < kernelImage.Length; pxl++)
                     {

@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PNGViewer : MonoBehaviour
 {
     ComputeBuffer m_ImageBuffer;
+
+    [SerializeField] Vector2 m_RotationRandomizer;
+    [SerializeField] Vector2 m_PositionRandomizer;
+    [SerializeField] Vector2 m_ScaleRandomizer;
+
     [SerializeField] string m_RootImageDirectory;
     [SerializeField] int m_Resolution;
     [SerializeField] string m_FileName;
@@ -52,16 +58,20 @@ public class PNGViewer : MonoBehaviour
     }
     void ApplyImage(float[] image)
     {
-        image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
+        image = ImageProcessor.TransformTexture(image, Random.Range(m_RotationRandomizer.x, m_RotationRandomizer.y),
+                        new Vector2(Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y), Random.Range(m_ScaleRandomizer.x, m_ScaleRandomizer.y)),
+                        new Vector2(Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y), Random.Range(m_PositionRandomizer.x, m_PositionRandomizer.y)), (int)Mathf.Sqrt(image.Length));
+
+        /*image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);
         image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
-        image = ImageProcessor.MaxPool(image, 2);
+        image = ImageProcessor.MaxPool(image, 2);*/
         /*image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);
         image = ImageProcessor.KerneledImage(image, m_Kernel[m_KernelIdx]);
         image = ImageProcessor.MaxPool(image, 2);*/
         
-        image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), m_TargetResolution);
+        //image = ImageProcessor.DownsampleNearest(image, (int) Mathf.Sqrt(image.Length), m_TargetResolution);
 
         m_Resolution = (int)Mathf.Sqrt(image.Length);
         m_ImageTexture = ImageProcessor.CreateTexture(m_Resolution);
