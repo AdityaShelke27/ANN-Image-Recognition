@@ -481,18 +481,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Painter: {fileID: 1192906114}
   m_Text: {fileID: 113424478}
-  m_IsUsingSavedWeights: 0
+  m_IsUsingSavedWeights: 1
   m_PredictedTextPrefab: {fileID: 1423298353257845518, guid: 26bd604ddcf5cda4d8ed23b338083c61, type: 3}
   m_PredictedParent: {fileID: 1382175580}
   m_TrainingImagePath: /Doodle Dataset/
   m_Epochs: 5
   m_MiniBatchSize: 32
-  m_RotationRandomizer: {x: -5, y: 5}
-  m_PositionRandomizer: {x: -0.05, y: 0.05}
-  m_ScaleRandomizer: {x: 0.9, y: 1.1}
+  m_RotationRandomizer: {x: -10, y: 10}
+  m_PositionRandomizer: {x: -0.07, y: 0.07}
+  m_ScaleRandomizer: {x: 0.8, y: 1.2}
   m_CurrentResolution: 254
   m_TargetResolution: 28
-  m_NoOfInputs: 1568
+  m_NoOfInputs: 784
   m_NoOfOutputs: 14
   m_NoOfHiddenLayers: 2
   m_NoOfNeuronsPerHiddenLayers: 200
