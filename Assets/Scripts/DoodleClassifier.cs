@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class DoodleClassifier : MonoBehaviour
@@ -47,6 +48,8 @@ public class DoodleClassifier : MonoBehaviour
     [SerializeField] bool m_IsUsingSavedWeights = false;
     [SerializeField] GameObject m_PredictedTextPrefab;
     [SerializeField] Transform m_PredictedParent;
+    [SerializeField] Sprite m_SelectImage;
+    [SerializeField] Color m_SelectColor;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -81,6 +84,13 @@ public class DoodleClassifier : MonoBehaviour
         for (int i = 0; i < m_NoOfOutputs; i++)
         {
             GameObject tex = Instantiate(m_PredictedTextPrefab, m_PredictedParent);
+            if(i == 0)
+            {
+                Image img = tex.AddComponent<Image>();
+                img.sprite = m_SelectImage;
+                img.type = Image.Type.Sliced;
+                img.color = m_SelectColor;
+            }
             m_PredictedLabels[i] = tex.transform.GetChild(0).GetComponent<TMP_Text>();
             m_PredictedValues[i] = tex.transform.GetChild(1).GetComponent<TMP_Text>();
         }

@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,7 +81,7 @@ public class Painter : MonoBehaviour
             ClearTexture();
         }
     }
-    void ClearTexture()
+    public void ClearTexture()
     {
         RenderTexture texture = ImageProcessor.CreateTexture(m_Resolution);
 
