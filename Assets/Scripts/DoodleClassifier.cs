@@ -50,6 +50,7 @@ public class DoodleClassifier : MonoBehaviour
     [SerializeField] Transform m_PredictedParent;
     [SerializeField] Sprite m_SelectImage;
     [SerializeField] Color m_SelectColor;
+    [SerializeField] Gradient m_Gradient;
 
     [Header("Training Parameters")]
     [SerializeField] string m_TrainingImagePath;
@@ -84,15 +85,17 @@ public class DoodleClassifier : MonoBehaviour
         for (int i = 0; i < m_NoOfOutputs; i++)
         {
             GameObject tex = Instantiate(m_PredictedTextPrefab, m_PredictedParent);
-            if(i == 0)
+            /*if(i == 0)
             {
                 Image img = tex.AddComponent<Image>();
                 img.sprite = m_SelectImage;
                 img.type = Image.Type.Sliced;
                 img.color = m_SelectColor;
-            }
+            }*/
             m_PredictedLabels[i] = tex.transform.GetChild(0).GetComponent<TMP_Text>();
             m_PredictedValues[i] = tex.transform.GetChild(1).GetComponent<TMP_Text>();
+            m_PredictedLabels[i].color = m_Gradient.Evaluate((float)i / m_NoOfOutputs);
+            m_PredictedValues[i].color = m_Gradient.Evaluate((float)i / m_NoOfOutputs);
         }
 
         if(!m_IsUsingSavedWeights)
